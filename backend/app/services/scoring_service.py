@@ -1,7 +1,7 @@
 """Scoring service for calculating severity, urgency, and priority."""
 import logging
-from typing import Dict, Any, Optional
 from datetime import datetime
+from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 

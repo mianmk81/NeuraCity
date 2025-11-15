@@ -8,11 +8,11 @@ from app.api.schemas.issue import IssueResponse, IssueUpdate, IssueStatus
 from app.core.dependencies import get_db
 from app.services.supabase_service import SupabaseService
 from app.services.image_service import validate_image, save_image, delete_image
-from app.services.scoring_service import (
-    calculate_severity,
-    calculate_urgency,
-    calculate_priority,
-    determine_action_type
+from app.services.ml_scoring_service import (
+    calculate_severity_ml,
+    calculate_urgency_ml,
+    calculate_priority_ml,
+    determine_action_type_ml
 )
 from app.services.action_engine import process_new_issue
 from app.utils.validators import validate_gps_coordinates
@@ -56,10 +56,31 @@ async def create_issue(
         db_service = SupabaseService(db)
         traffic_segments = await db_service.get_traffic_segments()
         
-        severity = calculate_severity(issue_type, description)
-        urgency = calculate_urgency(issue_type, traffic_segments, datetime.utcnow())
-        priority = calculate_priority(severity, urgency)
-        action_type = determine_action_type(issue_type)
+        # Calculate avg traffic congestion
+        avg_congestion = None
+        if traffic_segments:
+            avg_congestion = sum(t.get('congestion', 0) for t in traffic_segments) / len(traffic_segments)
+        
+        # Use ML for all scoring
+        severity = await calculate_severity_ml(
+            issue_type=issue_type,
+            description=description,
+            image_available=True
+        )
+        urgency = await calculate_urgency_ml(
+            issue_type=issue_type,
+            description=description,
+            severity=severity,
+            traffic_congestion=avg_congestion,
+            time_of_day=datetime.utcnow()
+        )
+        priority = await calculate_priority_ml(severity, urgency)
+        action_type = await determine_action_type_ml(
+            issue_type=issue_type,
+            description=description,
+            severity=severity,
+            urgency=urgency
+        )
         
         issue_data = {
             "lat": lat,
