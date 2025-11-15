@@ -229,49 +229,49 @@ const PlanRoute = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-4 md:py-8 relative z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="mb-4 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2 neon-blue">
             Plan Your Route
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm md:text-base text-gray-300">
             Select origin and destination on the map, then choose your route type
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
           {/* Left Panel - Controls */}
           <div className="lg:col-span-1 space-y-6">
             {/* Instructions */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Instructions</h3>
-              <ol className="space-y-2 text-sm text-gray-600">
+            <div className="glass rounded-lg shadow p-4 md:p-6 border border-blue-500/30">
+              <h3 className="font-semibold text-white mb-3 md:mb-4 text-base md:text-lg">Instructions</h3>
+              <ol className="space-y-2 text-sm text-gray-300">
                 <li className="flex items-start">
-                  <span className="font-medium text-primary-600 mr-2">1.</span>
-                  <span>Click on the map to place your <strong className="text-green-600">start pin</strong> (green)</span>
+                  <span className="font-medium text-cyan-400 mr-2">1.</span>
+                  <span>Click on the map to place your <strong className="text-green-400">start pin</strong> (green)</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="font-medium text-primary-600 mr-2">2.</span>
-                  <span>Click again to place your <strong className="text-red-600">destination pin</strong> (red)</span>
+                  <span className="font-medium text-cyan-400 mr-2">2.</span>
+                  <span>Click again to place your <strong className="text-red-400">destination pin</strong> (red)</span>
                 </li>
                 <li className="flex items-start">
-                  <span className="font-medium text-primary-600 mr-2">3.</span>
+                  <span className="font-medium text-cyan-400 mr-2">3.</span>
                   Choose your preferred route type
                 </li>
                 <li className="flex items-start">
-                  <span className="font-medium text-primary-600 mr-2">4.</span>
+                  <span className="font-medium text-cyan-400 mr-2">4.</span>
                   Click "Plan Route" to see your optimal path
                 </li>
               </ol>
             </div>
 
             {/* Location Selection */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Selected Points</h3>
+            <div className="glass rounded-lg shadow p-4 md:p-6 border border-blue-500/30">
+              <h3 className="font-semibold text-white mb-3 md:mb-4 text-base md:text-lg">Selected Points</h3>
               
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-xs text-blue-800">
+              <div className="mb-4 p-3 glass border border-blue-500/30 rounded-lg">
+                <p className="text-xs text-gray-300">
                   <strong>3 Ways to Select:</strong>
                   <br />1. Click map
                   <br />2. Type address: "Broadway", "Times Square"
@@ -282,9 +282,9 @@ const PlanRoute = () => {
               <div className="space-y-4">
                 {/* Origin */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 flex items-center mb-2">
-                    <MapPin className="h-4 w-4 mr-1 text-green-600" />
-                    Origin {clickMode === 'origin' && <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">Click map here</span>}
+                  <label className="text-sm font-medium text-gray-300 flex items-center mb-2">
+                    <MapPin className="h-4 w-4 mr-1 text-green-400" />
+                    Origin {clickMode === 'origin' && <span className="ml-2 text-xs bg-green-500/20 text-green-400 border border-green-500/50 px-2 py-0.5 rounded">Click map here</span>}
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -293,19 +293,19 @@ const PlanRoute = () => {
                       onChange={handleOriginInputChange}
                       onKeyPress={(e) => e.key === 'Enter' && handleSearchOrigin()}
                       placeholder="Type address or coordinates..."
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      className="flex-1 px-3 py-3 glass border border-gray-500/30 rounded-lg text-base text-white placeholder-gray-400 focus:ring-2 focus:ring-green-500/50 focus:border-green-500/50 min-h-[44px]"
                     />
                     <button
                       onClick={handleSearchOrigin}
                       disabled={!originInput.trim() || loading}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center"
+                      className="px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center shadow-lg shadow-green-500/30 min-h-[44px] min-w-[44px]"
                     >
                       <Search className="h-4 w-4" />
                     </button>
                   </div>
                   {origin && (
-                    <div className="mt-2 p-2 bg-green-50 rounded border border-green-200">
-                      <p className="text-xs text-green-800">
+                    <div className="mt-2 p-2 glass border border-green-500/30 rounded">
+                      <p className="text-xs text-green-400">
                         ✓ Set: {origin.lat.toFixed(6)}, {origin.lng.toFixed(6)}
                       </p>
                     </div>
@@ -314,9 +314,9 @@ const PlanRoute = () => {
 
                 {/* Destination */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 flex items-center mb-2">
-                    <MapPin className="h-4 w-4 mr-1 text-red-600" />
-                    Destination {clickMode === 'destination' && <span className="ml-2 text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded">Click map here</span>}
+                  <label className="text-sm font-medium text-gray-300 flex items-center mb-2">
+                    <MapPin className="h-4 w-4 mr-1 text-red-400" />
+                    Destination {clickMode === 'destination' && <span className="ml-2 text-xs bg-red-500/20 text-red-400 border border-red-500/50 px-2 py-0.5 rounded">Click map here</span>}
                   </label>
                   <div className="flex gap-2">
                     <input
@@ -325,19 +325,19 @@ const PlanRoute = () => {
                       onChange={handleDestinationInputChange}
                       onKeyPress={(e) => e.key === 'Enter' && handleSearchDestination()}
                       placeholder="Type address or coordinates..."
-                      className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                      className="flex-1 px-3 py-3 glass border border-gray-500/30 rounded-lg text-base text-white placeholder-gray-400 focus:ring-2 focus:ring-red-500/50 focus:border-red-500/50 min-h-[44px]"
                     />
                     <button
                       onClick={handleSearchDestination}
                       disabled={!destinationInput.trim() || loading}
-                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center"
+                      className="px-4 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg hover:from-red-600 hover:to-pink-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center shadow-lg shadow-red-500/30 min-h-[44px] min-w-[44px]"
                     >
                       <Search className="h-4 w-4" />
                     </button>
                   </div>
                   {destination && (
-                    <div className="mt-2 p-2 bg-red-50 rounded border border-red-200">
-                      <p className="text-xs text-red-800">
+                    <div className="mt-2 p-2 glass border border-red-500/30 rounded">
+                      <p className="text-xs text-red-400">
                         ✓ Set: {destination.lat.toFixed(6)}, {destination.lng.toFixed(6)}
                       </p>
                     </div>
@@ -346,23 +346,23 @@ const PlanRoute = () => {
                 
                 {/* Status indicator */}
                 {!origin && !destination && (
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-xs text-blue-800">
-                      <strong>Ready:</strong> Click the map to place your first pin (start point)
+                  <div className="p-3 glass border border-blue-500/30 rounded-lg">
+                    <p className="text-xs text-gray-300">
+                      <strong className="text-cyan-400">Ready:</strong> Click the map to place your first pin (start point)
                     </p>
                   </div>
                 )}
                 {origin && !destination && (
-                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                    <p className="text-xs text-yellow-800">
-                      <strong>Start set:</strong> Click the map again to place your destination pin
+                  <div className="p-3 glass border border-yellow-500/30 rounded-lg">
+                    <p className="text-xs text-gray-300">
+                      <strong className="text-yellow-400">Start set:</strong> Click the map again to place your destination pin
                     </p>
                   </div>
                 )}
                 {origin && destination && (
-                  <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-xs text-green-800">
-                      <strong>Both pins set:</strong> Click "Plan Route" or click the map again to reset
+                  <div className="p-3 glass border border-green-500/30 rounded-lg">
+                    <p className="text-xs text-gray-300">
+                      <strong className="text-green-400">Both pins set:</strong> Click "Plan Route" or click the map again to reset
                     </p>
                   </div>
                 )}
@@ -371,7 +371,7 @@ const PlanRoute = () => {
               {(origin || destination) && (
                 <button
                   onClick={handleReset}
-                  className="mt-4 w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                  className="mt-4 w-full flex items-center justify-center px-4 py-3 glass border border-gray-500/30 rounded-lg text-base font-medium text-gray-300 hover:border-cyan-500/50 hover:text-cyan-400 transition-all duration-300 min-h-[44px]"
                 >
                   <X className="h-4 w-4 mr-2" />
                   Reset Points
@@ -380,8 +380,8 @@ const PlanRoute = () => {
             </div>
 
             {/* Route Type Selection */}
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="font-semibold text-gray-900 mb-4">Route Type</h3>
+            <div className="glass rounded-lg shadow p-4 md:p-6 border border-blue-500/30">
+              <h3 className="font-semibold text-white mb-3 md:mb-4 text-base md:text-lg">Route Type</h3>
 
               <div className="space-y-3">
                 {ROUTE_TYPES.map((type) => (
@@ -389,8 +389,8 @@ const PlanRoute = () => {
                     key={type.value}
                     className={`flex items-start p-3 border rounded-lg cursor-pointer transition-colors ${
                       routeType === type.value
-                        ? 'border-primary-500 bg-primary-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-cyan-500/50 bg-blue-500/20'
+                        : 'border-gray-500/30 hover:border-cyan-500/30 glass'
                     }`}
                   >
                     <input
@@ -402,10 +402,10 @@ const PlanRoute = () => {
                       className="mt-1 mr-3"
                     />
                     <div className="flex-1">
-                      <p className="font-medium text-gray-900">{type.label}</p>
-                      <p className="text-xs text-gray-600">{type.description}</p>
+                      <p className="font-medium text-white">{type.label}</p>
+                      <p className="text-xs text-gray-300">{type.description}</p>
                       {routeType === type.value && (
-                        <div className="mt-2 text-xs text-primary-700 font-medium">
+                        <div className="mt-2 text-xs text-cyan-400 font-medium">
                           {type.value === 'quiet_walk' && '🔊 Showing noise heatmap'}
                           {(type.value === 'eco' || type.value === 'drive') && '🚗 Showing traffic heatmap'}
                         </div>
@@ -416,7 +416,7 @@ const PlanRoute = () => {
               </div>
               
               {heatmapLoading && (
-                <div className="mt-3 flex items-center text-xs text-gray-500">
+                <div className="mt-3 flex items-center text-xs text-gray-400">
                   <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                   Loading heatmap data...
                 </div>
@@ -427,10 +427,10 @@ const PlanRoute = () => {
             <button
               onClick={handlePlanRoute}
               disabled={!origin || !destination || loading}
-              className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+              className={`w-full py-4 px-4 rounded-lg font-medium transition-all duration-300 min-h-[48px] text-base ${
                 origin && destination && !loading
-                  ? 'bg-primary-600 text-white hover:bg-primary-700'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  ? 'btn-futuristic text-white'
+                  : 'glass border border-gray-500/30 text-gray-500 cursor-not-allowed'
               }`}
             >
               {loading ? (
@@ -447,8 +447,8 @@ const PlanRoute = () => {
             </button>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                <p className="text-sm text-red-700">{error}</p>
+              <div className="glass border border-red-500/30 rounded-lg p-4">
+                <p className="text-sm text-red-400">{error}</p>
               </div>
             )}
 
@@ -457,18 +457,20 @@ const PlanRoute = () => {
           </div>
 
           {/* Right Panel - Map */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow p-4">
-              <Map2D
-                height="calc(100vh - 200px)"
-                onMapClick={handleMapClick}
-                markers={markers}
-                route={route}
-                noiseSegments={noiseSegments}
-                trafficSegments={trafficSegments}
-                center={[40.7128, -74.0060]} // New York City
-                zoom={13}
-              />
+          <div className="lg:col-span-2 order-first lg:order-last">
+            <div className="glass rounded-lg shadow p-2 md:p-4 border border-blue-500/30">
+              <div className="h-[400px] md:h-[500px] lg:h-[700px] xl:h-[800px]">
+                <Map2D
+                  height="100%"
+                  onMapClick={handleMapClick}
+                  markers={markers}
+                  route={route}
+                  noiseSegments={noiseSegments}
+                  trafficSegments={trafficSegments}
+                  center={[40.7128, -74.0060]} // New York City
+                  zoom={13}
+                />
+              </div>
             </div>
           </div>
         </div>

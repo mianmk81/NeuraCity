@@ -54,8 +54,8 @@ const GPSCapture = ({ onLocationCapture, required = false }) => {
 
   return (
     <div className="w-full">
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        GPS Location {required && <span className="text-red-500">*</span>}
+      <label className="block text-sm font-medium text-gray-300 mb-2">
+        GPS Location {required && <span className="text-red-400">*</span>}
       </label>
 
       {!location ? (
@@ -63,10 +63,10 @@ const GPSCapture = ({ onLocationCapture, required = false }) => {
           type="button"
           onClick={captureLocation}
           disabled={loading}
-          className={`w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium transition-colors ${
+          className={`w-full flex items-center justify-center px-4 py-4 glass border border-gray-500/30 rounded-lg text-base font-medium transition-all min-h-[48px] ${
             loading
-              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              : 'bg-white text-gray-700 hover:bg-gray-50'
+              ? 'text-gray-500 cursor-not-allowed'
+              : 'text-white hover:border-cyan-500/50 hover:bg-cyan-500/10 active:bg-cyan-500/20'
           }`}
         >
           {loading ? (
@@ -82,25 +82,25 @@ const GPSCapture = ({ onLocationCapture, required = false }) => {
           )}
         </button>
       ) : (
-        <div className="border-2 border-green-300 bg-green-50 rounded-lg p-4">
+        <div className="glass border-2 border-green-500/30 rounded-lg p-4">
           <div className="flex items-start">
-            <CheckCircle className="h-5 w-5 text-green-600 mr-3 mt-0.5 flex-shrink-0" />
+            <CheckCircle className="h-5 w-5 text-green-400 mr-3 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
-              <p className="text-sm font-medium text-green-800 mb-1">
+              <p className="text-sm font-medium text-green-400 mb-1">
                 Location captured successfully
               </p>
-              <div className="text-sm text-green-700 space-y-1">
+              <div className="text-sm text-gray-300 space-y-1">
                 <p>
-                  <span className="font-medium">Latitude:</span> {location.lat.toFixed(6)}
+                  <span className="font-medium text-cyan-400">Latitude:</span> {location.lat.toFixed(6)}
                 </p>
                 <p>
-                  <span className="font-medium">Longitude:</span> {location.lng.toFixed(6)}
+                  <span className="font-medium text-cyan-400">Longitude:</span> {location.lng.toFixed(6)}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={captureLocation}
-                className="mt-2 text-xs text-green-600 hover:text-green-800 underline"
+                className="mt-2 text-xs text-green-400 hover:text-green-300 underline transition-colors"
               >
                 Recapture location
               </button>
@@ -110,8 +110,8 @@ const GPSCapture = ({ onLocationCapture, required = false }) => {
       )}
 
       {error && (
-        <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="mt-2 p-3 glass border border-red-500/30 rounded-lg">
+          <p className="text-sm text-red-400">{error}</p>
         </div>
       )}
     </div>

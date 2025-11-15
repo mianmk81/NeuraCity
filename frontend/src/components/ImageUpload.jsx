@@ -50,16 +50,16 @@ const ImageUpload = ({ onImageSelect, required = false }) => {
 
   return (
     <div className="w-full">
-      <label className="block text-sm font-medium text-gray-700 mb-2">
-        Upload Image {required && <span className="text-red-500">*</span>}
+      <label className="block text-sm font-medium text-gray-300 mb-2">
+        Upload Image {required && <span className="text-red-400">*</span>}
       </label>
 
       {!preview ? (
         <div
-          className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+          className={`border-2 border-dashed rounded-lg p-6 md:p-8 text-center transition-all cursor-pointer min-h-[200px] md:min-h-[250px] flex flex-col items-center justify-center ${
             isDragging
-              ? 'border-primary-500 bg-primary-50'
-              : 'border-gray-300 hover:border-primary-400'
+              ? 'border-cyan-500 bg-cyan-500/10 glass'
+              : 'border-gray-500/30 hover:border-cyan-500/50 glass hover:bg-cyan-500/5'
           }`}
           onDrop={handleDrop}
           onDragOver={handleDragOver}
@@ -73,20 +73,20 @@ const ImageUpload = ({ onImageSelect, required = false }) => {
             onChange={handleFileInputChange}
             className="hidden"
           />
-          <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-          <p className="text-sm text-gray-600 mb-2">
+          <Upload className="mx-auto h-12 w-12 text-cyan-400 mb-4" />
+          <p className="text-sm text-gray-300 mb-2">
             Drag and drop an image here, or click to select
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-gray-400">
             PNG, JPG, GIF up to 10MB
           </p>
         </div>
       ) : (
-        <div className="relative border-2 border-gray-300 rounded-lg p-4">
+        <div className="relative glass border-2 border-green-500/30 rounded-lg p-4">
           <button
             type="button"
             onClick={handleRemove}
-            className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+            className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-lg"
           >
             <X className="h-5 w-5" />
           </button>
@@ -95,7 +95,7 @@ const ImageUpload = ({ onImageSelect, required = false }) => {
             alt="Preview"
             className="w-full h-48 object-cover rounded"
           />
-          <div className="mt-2 flex items-center text-sm text-gray-600">
+          <div className="mt-2 flex items-center text-sm text-green-400">
             <ImageIcon className="h-4 w-4 mr-2" />
             <span>Image uploaded successfully</span>
           </div>

@@ -5,6 +5,27 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Futuristic Background Pattern */
+@keyframes grid-move {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(50px, 50px); }
+}
+
+@keyframes neon-pulse {
+  0%, 100% { opacity: 1; filter: brightness(1); }
+  50% { opacity: 0.8; filter: brightness(1.2); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(5deg); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5), 0 0 40px rgba(59, 130, 246, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.8), 0 0 60px rgba(59, 130, 246, 0.5); }
+}
+
 /* ==========================================
    CUSTOM CSS VARIABLES - THEME COLORS
    ========================================== */
@@ -107,17 +128,44 @@
   }
 
   body {
-    @apply bg-gray-50 text-gray-900 antialiased;
+    @apply text-gray-900 antialiased;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #1e293b 75%, #0f172a 100%);
+    background-size: 400% 400%;
+    animation: gradient-shift 15s ease infinite;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
       'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
       sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    animation: grid-move 20s linear infinite;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
 
   /* Better Typography */
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold text-gray-900 leading-tight;
+    @apply font-bold leading-tight;
+    color: rgba(255, 255, 255, 0.95);
   }
 
   h1 { @apply text-4xl md:text-5xl; }
@@ -318,22 +366,257 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 4px 16px rgba(0, 0, 0, 0.08);
   }
 
-  /* Glass Effect */
+  /* Glass Effect - Futuristic */
   .glass {
-    background: rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  }
+
+  .glass-dark {
+    background: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+  }
+
+  /* Neon Glow Effects */
+  .neon-blue {
+    text-shadow: 
+      0 0 5px rgba(59, 130, 246, 0.5),
+      0 0 10px rgba(59, 130, 246, 0.5),
+      0 0 15px rgba(59, 130, 246, 0.5),
+      0 0 20px rgba(59, 130, 246, 0.5);
+    animation: neon-pulse 2s ease-in-out infinite;
+  }
+
+  .neon-cyan {
+    text-shadow: 
+      0 0 5px rgba(6, 182, 212, 0.5),
+      0 0 10px rgba(6, 182, 212, 0.5),
+      0 0 15px rgba(6, 182, 212, 0.5);
+  }
+
+  .glow-box {
+    box-shadow: 
+      0 0 20px rgba(59, 130, 246, 0.3),
+      0 0 40px rgba(59, 130, 246, 0.2),
+      inset 0 0 20px rgba(59, 130, 246, 0.1);
+    animation: glow 3s ease-in-out infinite;
+  }
+
+  /* Holographic Effect */
+  .holographic {
+    background: linear-gradient(
+      135deg,
+      rgba(59, 130, 246, 0.1) 0%,
+      rgba(139, 92, 246, 0.1) 25%,
+      rgba(236, 72, 153, 0.1) 50%,
+      rgba(59, 130, 246, 0.1) 75%,
+      rgba(6, 182, 212, 0.1) 100%
+    );
+    background-size: 200% 200%;
+    animation: holographic-shift 5s ease infinite;
+  }
+
+  @keyframes holographic-shift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  /* Futuristic Button */
+  .btn-futuristic {
+    position: relative;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+    border: 1px solid rgba(59, 130, 246, 0.5);
     backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+
+  .btn-futuristic::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-futuristic:hover::before {
+    left: 100%;
+  }
+
+  .btn-futuristic:hover {
+    box-shadow: 
+      0 0 20px rgba(59, 130, 246, 0.6),
+      0 0 40px rgba(59, 130, 246, 0.4),
+      inset 0 0 20px rgba(59, 130, 246, 0.1);
+    transform: translateY(-2px);
   }
 }
 
 /* ==========================================
-   RESPONSIVE IMPROVEMENTS
+   RESPONSIVE IMPROVEMENTS - MOBILE OPTIMIZATION
    ========================================== */
-@media (max-width: 768px) {
-  h1 { @apply text-3xl; }
-  h2 { @apply text-2xl; }
-  h3 { @apply text-xl; }
+
+/* Mobile-First: Base styles for mobile */
+@media (max-width: 640px) {
+  /* Typography scaling for mobile */
+  h1 { 
+    @apply text-3xl;
+    line-height: 1.2;
+  }
+  h2 { 
+    @apply text-2xl;
+    line-height: 1.3;
+  }
+  h3 { 
+    @apply text-xl;
+    line-height: 1.4;
+  }
+  
+  /* Better spacing on mobile */
+  body {
+    font-size: 16px; /* Prevent iOS zoom on input focus */
+  }
+  
+  /* Touch-friendly buttons - minimum 44x44px */
+  button, .btn, a[role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+    padding: 0.75rem 1rem;
+  }
+  
+  /* Better form inputs for mobile */
+  input, textarea, select {
+    font-size: 16px; /* Prevent iOS zoom */
+    min-height: 44px;
+    padding: 0.75rem 1rem;
+  }
+  
+  /* Improved card spacing */
+  .glass, .card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Better container padding */
+  .max-w-7xl, .max-w-2xl, .max-w-4xl {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Stack grids on mobile */
+  .grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem;
+  }
+  
+  /* Full-width buttons on mobile */
+  button.w-full, .btn-futuristic {
+    width: 100%;
+  }
+  
+  /* Better map container for mobile */
+  .leaflet-container {
+    min-height: 300px;
+  }
+  
+  /* Responsive map heights */
+  @media (min-width: 768px) {
+    .leaflet-container {
+      min-height: 500px;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .leaflet-container {
+      min-height: 600px;
+    }
+  }
+  
+  /* Optimize glass effects for mobile performance */
+  .glass, .glass-dark {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+  
+  /* Reduce animation complexity on mobile */
+  .animate-float {
+    animation: none;
+  }
+  
+  /* Better table scrolling on mobile */
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Improve modal for mobile */
+  .fixed.inset-0 {
+    padding: 1rem;
+  }
+}
+
+/* Tablet optimization */
+@media (min-width: 641px) and (max-width: 1024px) {
+  h1 { @apply text-4xl; }
+  h2 { @apply text-3xl; }
+  h3 { @apply text-2xl; }
+  
+  button, .btn {
+    min-height: 40px;
+    padding: 0.625rem 1rem;
+  }
+  
+  input, textarea, select {
+    min-height: 40px;
+  }
+}
+
+/* Desktop - keep existing */
+@media (min-width: 1025px) {
+  h1 { @apply text-4xl md:text-5xl; }
+  h2 { @apply text-3xl md:text-4xl; }
+  h3 { @apply text-2xl md:text-3xl; }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger touch targets */
+  a, button, input[type="button"], input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Remove hover effects on touch devices */
+  .hover-lift:hover {
+    transform: none;
+  }
+  
+  /* Better focus states for touch */
+  *:focus-visible {
+    outline: 3px solid rgba(59, 130, 246, 0.5);
+    outline-offset: 2px;
+  }
+}
+
+/* Landscape mobile optimization */
+@media (max-width: 896px) and (orientation: landscape) {
+  .min-h-screen {
+    min-height: auto;
+  }
+  
+  /* Reduce vertical padding in landscape */
+  .py-8, .py-12, .py-16 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
 }
 
 /* ==========================================

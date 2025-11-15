@@ -19,23 +19,24 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 backdrop-blur-nav border-b border-gray-200 shadow-sm animate-fade-in-down">
+    <nav className="sticky top-0 z-50 glass-dark border-b border-blue-500/30 shadow-lg animate-fade-in-down">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center group" onClick={() => setMobileMenuOpen(false)}>
             <div className="flex items-center">
-              <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shadow-md group-hover:shadow-lg transition-all duration-300 group-hover:scale-110">
-                <Sparkles className="h-5 w-5 text-white" />
+              <div className="relative w-12 h-12 bg-gradient-to-br from-blue-500 via-purple-500 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-2xl transition-all duration-300 group-hover:scale-110 glow-box">
+                <Sparkles className="h-6 w-6 text-white animate-pulse" />
+                <div className="absolute inset-0 rounded-xl bg-gradient-to-br from-blue-400/50 to-purple-400/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
-              <span className="ml-3 text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-600 to-secondary-600">
+              <span className="ml-3 text-xl font-bold neon-blue">
                 NeuraCity
               </span>
             </div>
           </Link>
 
           {/* Navigation Links - Desktop */}
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden md:flex items-center space-x-2">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = location.pathname === item.path;
@@ -46,14 +47,14 @@ const Navbar = () => {
                   to={item.path}
                   className={`relative flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                     isActive
-                      ? 'text-primary-700'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'text-cyan-400 neon-cyan bg-blue-500/20 border border-cyan-500/50'
+                      : 'text-gray-300 hover:text-cyan-400 hover:bg-blue-500/10 border border-transparent'
                   }`}
                 >
-                  <Icon className="h-4 w-4 mr-2" />
+                  <Icon className={`h-4 w-4 mr-2 ${isActive ? 'text-cyan-400' : ''}`} />
                   {item.label}
                   {isActive && (
-                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-primary-600 to-secondary-600 rounded-full animate-scale-in"></span>
+                    <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 via-cyan-500 to-purple-500 rounded-full animate-scale-in shadow-lg shadow-cyan-500/50"></span>
                   )}
                 </Link>
               );
@@ -64,7 +65,7 @@ const Navbar = () => {
           <div className="md:hidden">
             <button
               onClick={toggleMobileMenu}
-              className="text-gray-600 hover:text-gray-900 p-2 rounded-lg hover:bg-gray-100 transition-colors"
+              className="text-gray-300 hover:text-cyan-400 p-3 rounded-lg hover:bg-blue-500/10 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
@@ -79,7 +80,7 @@ const Navbar = () => {
 
       {/* Mobile Navigation - Animated Dropdown */}
       <div
-        className={`md:hidden border-t border-gray-200 backdrop-blur-nav transition-all duration-300 ease-in-out ${
+        className={`md:hidden border-t border-blue-500/30 glass-dark transition-all duration-300 ease-in-out ${
           mobileMenuOpen
             ? 'max-h-96 opacity-100'
             : 'max-h-0 opacity-0 overflow-hidden'
@@ -95,10 +96,10 @@ const Navbar = () => {
                 key={item.path}
                 to={item.path}
                 onClick={() => setMobileMenuOpen(false)}
-                className={`flex items-center px-3 py-3 rounded-lg text-sm font-medium transition-all duration-300 ${
+                className={`flex items-center px-4 py-4 rounded-lg text-base font-medium transition-all duration-300 min-h-[44px] ${
                   isActive
-                    ? 'bg-gradient-to-r from-primary-50 to-secondary-50 text-primary-700 shadow-sm'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    ? 'bg-blue-500/20 text-cyan-400 border border-cyan-500/50 shadow-sm'
+                    : 'text-gray-300 hover:bg-blue-500/10 hover:text-cyan-400'
                 }`}
                 style={{
                   animationDelay: `${index * 50}ms`,
@@ -108,7 +109,7 @@ const Navbar = () => {
                 <Icon className="h-5 w-5 mr-3" />
                 {item.label}
                 {isActive && (
-                  <span className="ml-auto w-2 h-2 bg-primary-600 rounded-full animate-pulse"></span>
+                  <span className="ml-auto w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
                 )}
               </Link>
             );

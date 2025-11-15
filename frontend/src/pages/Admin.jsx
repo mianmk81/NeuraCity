@@ -92,21 +92,21 @@ const Admin = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen py-4 md:py-8 relative z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+        <div className="mb-4 md:mb-8">
+          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2 neon-blue">
             Admin Dashboard
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm md:text-base text-gray-300">
             Manage emergencies, work orders, and infrastructure issues
           </p>
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="flex -mb-px">
+        <div className="glass rounded-lg shadow mb-4 md:mb-6 border border-blue-500/30 overflow-x-auto">
+          <div className="border-b border-blue-500/30">
+            <nav className="flex -mb-px min-w-max md:min-w-0">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -115,10 +115,10 @@ const Admin = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                    className={`flex items-center px-4 md:px-6 py-3 md:py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap min-h-[44px] ${
                       isActive
-                        ? 'border-primary-600 text-primary-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        ? 'border-cyan-500 text-cyan-400 neon-cyan'
+                        : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-500/50'
                     }`}
                   >
                     <Icon className="h-5 w-5 mr-2" />
@@ -132,14 +132,14 @@ const Admin = () => {
 
         {/* Content */}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="mb-6 glass border border-red-500/30 rounded-lg p-4">
+            <p className="text-sm text-red-400">{error}</p>
           </div>
         )}
 
         {loading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-12 w-12 text-primary-600 animate-spin" />
+            <Loader2 className="h-12 w-12 text-cyan-400 animate-spin" />
           </div>
         ) : (
           <>
@@ -147,44 +147,44 @@ const Admin = () => {
             {activeTab === 'emergency' && (
               <div className="space-y-6">
                 {emergencyQueue.length === 0 ? (
-                  <div className="bg-white rounded-lg shadow p-12 text-center">
+                  <div className="glass rounded-lg shadow p-12 text-center border border-blue-500/30">
                     <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">No emergency items in queue</p>
+                    <p className="text-gray-300">No emergency items in queue</p>
                   </div>
                 ) : (
                   emergencyQueue.map((emergency) => (
-                    <div key={emergency.id} className="bg-white rounded-lg shadow border border-gray-200 p-6">
+                    <div key={emergency.id} className="glass rounded-lg shadow border border-red-500/30 p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div>
-                          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                          <h3 className="text-lg font-semibold text-white mb-1">
                             Emergency Report
                           </h3>
-                          <p className="text-sm text-gray-500">
+                          <p className="text-sm text-gray-400">
                             {formatDate(emergency.created_at)}
                           </p>
                         </div>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
                           emergency.status === 'reviewed'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-red-100 text-red-700'
+                            ? 'bg-green-500/20 text-green-400 border-green-500/50'
+                            : 'bg-red-500/20 text-red-400 border-red-500/50'
                         }`}>
                           {emergency.status.toUpperCase()}
                         </span>
                       </div>
 
                       {emergency.issue && (
-                        <div className="mb-4 p-3 bg-gray-50 rounded-lg">
-                          <p className="text-sm text-gray-600">
-                            <span className="font-medium">Location:</span>{' '}
+                        <div className="mb-4 p-3 glass border border-blue-500/20 rounded-lg">
+                          <p className="text-sm text-gray-300">
+                            <span className="font-medium text-cyan-400">Location:</span>{' '}
                             {emergency.issue.lat.toFixed(6)}, {emergency.issue.lng.toFixed(6)}
                           </p>
-                          <p className="text-sm text-gray-600">
-                            <span className="font-medium">Type:</span>{' '}
+                          <p className="text-sm text-gray-300">
+                            <span className="font-medium text-cyan-400">Type:</span>{' '}
                             {formatIssueType(emergency.issue.issue_type)}
                           </p>
                           {emergency.issue.description && (
-                            <p className="text-sm text-gray-600 mt-1">
-                              <span className="font-medium">Description:</span>{' '}
+                            <p className="text-sm text-gray-300 mt-1">
+                              <span className="font-medium text-cyan-400">Description:</span>{' '}
                               {emergency.issue.description}
                             </p>
                           )}
@@ -192,7 +192,7 @@ const Admin = () => {
                             <div className="mt-2">
                               <button
                                 onClick={() => setSelectedImage(getImageUrl(emergency.issue.image_url))}
-                                className="flex items-center text-primary-600 hover:text-primary-800 font-medium text-sm"
+                                className="flex items-center text-cyan-400 hover:text-cyan-300 font-medium text-sm transition-colors"
                               >
                                 <Eye className="h-4 w-4 mr-1" />
                                 View Evidence Image
@@ -203,11 +203,11 @@ const Admin = () => {
                       )}
 
                       {emergency.summary && (
-                        <div className="mb-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                          <h4 className="text-sm font-semibold text-yellow-900 mb-2">
+                        <div className="mb-4 p-4 glass border border-yellow-500/30 rounded-lg">
+                          <h4 className="text-sm font-semibold text-yellow-400 mb-2">
                             AI-Generated Dispatcher Summary
                           </h4>
-                          <p className="text-sm text-yellow-800 leading-relaxed whitespace-pre-wrap">
+                          <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap">
                             {emergency.summary}
                           </p>
                         </div>
@@ -216,7 +216,7 @@ const Admin = () => {
                       {emergency.status === 'pending' && (
                         <button
                           onClick={() => handleMarkEmergencyReviewed(emergency.id)}
-                          className="w-full py-2 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium flex items-center justify-center"
+                          className="w-full py-2 px-4 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all font-medium flex items-center justify-center shadow-lg shadow-green-500/30"
                         >
                           <CheckCircle className="h-4 w-4 mr-2" />
                           Mark as Reviewed
@@ -232,9 +232,9 @@ const Admin = () => {
             {activeTab === 'workorders' && (
               <div className="space-y-6">
                 {workOrders.length === 0 ? (
-                  <div className="bg-white rounded-lg shadow p-12 text-center">
+                  <div className="glass rounded-lg shadow p-12 text-center border border-blue-500/30">
                     <Wrench className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">No work orders available</p>
+                    <p className="text-gray-300">No work orders available</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -253,61 +253,63 @@ const Admin = () => {
 
             {/* All Issues Tab */}
             {activeTab === 'issues' && (
-              <div className="bg-white rounded-lg shadow">
+              <div className="glass rounded-lg shadow border border-blue-500/30 overflow-hidden">
                 {allIssues.length === 0 ? (
                   <div className="p-12 text-center">
                     <List className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">No issues reported</p>
+                    <p className="text-gray-300">No issues reported</p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
+                  <div className="overflow-x-auto -mx-4 md:mx-0" style={{ WebkitOverflowScrolling: 'touch' }}>
+                    <div className="inline-block min-w-full align-middle px-4 md:px-0">
+                      <table className="min-w-full divide-y divide-blue-500/20">
+                      <thead className="glass border-b border-blue-500/30">
                         <tr>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                             Type
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                             Location
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                             Priority
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                             Status
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                             Date
                           </th>
-                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">
                             Actions
                           </th>
                         </tr>
                       </thead>
-                      <tbody className="bg-white divide-y divide-gray-200">
+                      <tbody className="divide-y divide-blue-500/20">
                         {allIssues.map((issue) => (
-                          <tr key={issue.id} className="hover:bg-gray-50">
+                          <tr key={issue.id} className="hover:bg-blue-500/10 transition-colors">
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-medium text-gray-900">
+                              <div className="text-sm font-medium text-white">
                                 {formatIssueType(issue.issue_type)}
                               </div>
                               {issue.description && (
-                                <div className="text-xs text-gray-500 max-w-xs truncate">
+                                <div className="text-xs text-gray-400 max-w-xs truncate">
                                   {issue.description}
                                 </div>
                               )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-xs text-gray-500">
+                              <div className="text-xs text-gray-400">
                                 {issue.lat.toFixed(4)}, {issue.lng.toFixed(4)}
                               </div>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
                               <span
-                                className="px-2 py-1 text-xs font-medium rounded-full"
+                                className="px-2 py-1 text-xs font-medium rounded-full border"
                                 style={{
                                   backgroundColor: `${getPriorityColor(issue.priority)}20`,
                                   color: getPriorityColor(issue.priority),
+                                  borderColor: `${getPriorityColor(issue.priority)}50`,
                                 }}
                               >
                                 {issue.priority || 'N/A'}
@@ -317,21 +319,21 @@ const Admin = () => {
                               <select
                                 value={issue.status}
                                 onChange={(e) => handleUpdateIssueStatus(issue.id, e.target.value)}
-                                className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                                className="text-sm glass border border-gray-500/30 rounded px-2 py-1 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 bg-transparent"
                               >
-                                <option value="open">Open</option>
-                                <option value="in_progress">In Progress</option>
-                                <option value="resolved">Resolved</option>
+                                <option value="open" className="bg-slate-800">Open</option>
+                                <option value="in_progress" className="bg-slate-800">In Progress</option>
+                                <option value="resolved" className="bg-slate-800">Resolved</option>
                               </select>
                             </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                               {formatDate(issue.created_at)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                               {issue.image_url && (
                                 <button
                                   onClick={() => setSelectedImage(getImageUrl(issue.image_url))}
-                                  className="flex items-center text-primary-600 hover:text-primary-800 font-medium"
+                                  className="flex items-center text-cyan-400 hover:text-cyan-300 font-medium transition-colors"
                                 >
                                   <Eye className="h-4 w-4 mr-1" />
                                   View Image
@@ -342,6 +344,7 @@ const Admin = () => {
                         ))}
                       </tbody>
                     </table>
+                    </div>
                   </div>
                 )}
               </div>

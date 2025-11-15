@@ -69,7 +69,7 @@ const IssueForm = ({ onSubmit, loading = false }) => {
       <div>
         <ImageUpload onImageSelect={setImage} required />
         {errors.image && (
-          <p className="mt-1 text-sm text-red-600 flex items-center">
+          <p className="mt-1 text-sm text-red-400 flex items-center">
             <AlertCircle className="h-4 w-4 mr-1" />
             {errors.image}
           </p>
@@ -80,7 +80,7 @@ const IssueForm = ({ onSubmit, loading = false }) => {
       <div>
         <GPSCapture onLocationCapture={setLocation} required />
         {errors.location && (
-          <p className="mt-1 text-sm text-red-600 flex items-center">
+          <p className="mt-1 text-sm text-red-400 flex items-center">
             <AlertCircle className="h-4 w-4 mr-1" />
             {errors.location}
           </p>
@@ -89,8 +89,8 @@ const IssueForm = ({ onSubmit, loading = false }) => {
 
       {/* Issue Type */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Issue Type <span className="text-red-500">*</span>
+        <label className="block text-sm font-medium text-gray-300 mb-2">
+          Issue Type <span className="text-red-400">*</span>
         </label>
         <select
           value={issueType}
@@ -98,17 +98,17 @@ const IssueForm = ({ onSubmit, loading = false }) => {
             setIssueType(e.target.value);
             setErrors({ ...errors, issueType: undefined });
           }}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+          className="w-full px-4 py-2 glass border border-gray-500/30 rounded-lg text-white focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 bg-transparent"
         >
-          <option value="">Select issue type</option>
+          <option value="" className="bg-slate-800">Select issue type</option>
           {ISSUE_TYPES.map((type) => (
-            <option key={type.value} value={type.value}>
+            <option key={type.value} value={type.value} className="bg-slate-800">
               {type.label}
             </option>
           ))}
         </select>
         {errors.issueType && (
-          <p className="mt-1 text-sm text-red-600 flex items-center">
+          <p className="mt-1 text-sm text-red-400 flex items-center">
             <AlertCircle className="h-4 w-4 mr-1" />
             {errors.issueType}
           </p>
@@ -118,8 +118,8 @@ const IssueForm = ({ onSubmit, loading = false }) => {
       {/* Custom Type Input (shown when "other" is selected) */}
       {issueType === 'other' && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Specify Issue Type <span className="text-red-500">*</span>
+          <label className="block text-sm font-medium text-gray-300 mb-2">
+            Specify Issue Type <span className="text-red-400">*</span>
           </label>
           <input
             type="text"
@@ -129,10 +129,10 @@ const IssueForm = ({ onSubmit, loading = false }) => {
               setErrors({ ...errors, customType: undefined });
             }}
             placeholder="e.g., Street light out, Graffiti, etc."
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="w-full px-4 py-2 glass border border-gray-500/30 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 bg-transparent"
           />
           {errors.customType && (
-            <p className="mt-1 text-sm text-red-600 flex items-center">
+            <p className="mt-1 text-sm text-red-400 flex items-center">
               <AlertCircle className="h-4 w-4 mr-1" />
               {errors.customType}
             </p>
@@ -142,7 +142,7 @@ const IssueForm = ({ onSubmit, loading = false }) => {
 
       {/* Description (optional) */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-300 mb-2">
           Description <span className="text-gray-400">(optional)</span>
         </label>
         <textarea
@@ -150,7 +150,7 @@ const IssueForm = ({ onSubmit, loading = false }) => {
           onChange={(e) => setDescription(e.target.value)}
           rows={4}
           placeholder="Provide additional details about the issue..."
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+          className="w-full px-4 py-2 glass border border-gray-500/30 rounded-lg text-white placeholder-gray-400 focus:ring-2 focus:ring-cyan-500/50 focus:border-cyan-500/50 resize-none bg-transparent"
         />
       </div>
 
@@ -158,17 +158,17 @@ const IssueForm = ({ onSubmit, loading = false }) => {
       <button
         type="submit"
         disabled={!isFormValid || loading}
-        className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+        className={`w-full py-4 px-4 rounded-lg font-medium transition-all duration-300 min-h-[48px] text-base ${
           isFormValid && !loading
-            ? 'bg-primary-600 text-white hover:bg-primary-700'
-            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            ? 'btn-futuristic text-white'
+            : 'glass border border-gray-500/30 text-gray-500 cursor-not-allowed'
         }`}
       >
         {loading ? 'Submitting...' : 'Submit Issue Report'}
       </button>
 
       {!isFormValid && (
-        <p className="text-sm text-gray-500 text-center">
+        <p className="text-sm text-gray-400 text-center">
           Please complete all required fields to submit
         </p>
       )}

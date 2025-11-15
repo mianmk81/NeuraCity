@@ -69,20 +69,20 @@ const WorkOrderCard = ({ workOrder, onApprove, onUpdate }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow border border-gray-200 p-5">
+    <div className="glass rounded-lg shadow border border-blue-500/30 p-5 hover:border-cyan-500/50 transition-colors">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="text-lg font-semibold text-gray-800">
+          <h3 className="text-lg font-semibold text-white">
             {formatIssueType(workOrder.issue?.issue_type || 'Unknown')}
           </h3>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-400">
             {formatDate(workOrder.created_at)}
           </p>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-          isApproved ? 'bg-green-100 text-green-700' :
-          isPending ? 'bg-yellow-100 text-yellow-700' :
-          'bg-gray-100 text-gray-700'
+        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+          isApproved ? 'bg-green-500/20 text-green-400 border-green-500/50' :
+          isPending ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' :
+          'bg-gray-500/20 text-gray-400 border-gray-500/50'
         }`}>
           {workOrder.status.replace('_', ' ').toUpperCase()}
         </span>
@@ -90,21 +90,21 @@ const WorkOrderCard = ({ workOrder, onApprove, onUpdate }) => {
 
       {/* Issue Location */}
       {workOrder.issue && (
-        <div className="mb-4 text-sm text-gray-600">
+        <div className="mb-4 text-sm text-gray-300">
           <p>
-            <span className="font-medium">Location:</span>{' '}
+            <span className="font-medium text-cyan-400">Location:</span>{' '}
             {workOrder.issue.lat.toFixed(6)}, {workOrder.issue.lng.toFixed(6)}
           </p>
           {workOrder.issue.description && (
             <p className="mt-1">
-              <span className="font-medium">Description:</span>{' '}
+              <span className="font-medium text-cyan-400">Description:</span>{' '}
               {workOrder.issue.description}
             </p>
           )}
           {workOrder.issue.image_url && (
             <button
               onClick={() => setShowImage(true)}
-              className="mt-2 flex items-center text-primary-600 hover:text-primary-800 font-medium text-sm"
+              className="mt-2 flex items-center text-cyan-400 hover:text-cyan-300 font-medium text-sm transition-colors"
             >
               <Eye className="h-4 w-4 mr-1" />
               View Issue Image
@@ -115,14 +115,14 @@ const WorkOrderCard = ({ workOrder, onApprove, onUpdate }) => {
 
       {/* Material Suggestion with Better Formatting */}
       {workOrder.material_suggestion && (
-        <div className="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="mb-4 p-4 glass border border-blue-500/30 rounded-lg">
           <div className="flex items-start">
-            <Package className="h-5 w-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" />
+            <Package className="h-5 w-5 text-cyan-400 mr-2 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
-              <p className="text-xs font-semibold text-blue-700 mb-2 uppercase">
+              <p className="text-xs font-semibold text-cyan-400 mb-2 uppercase">
                 AI-Generated Repair Plan
               </p>
-              <div className="text-sm text-blue-900 whitespace-pre-wrap leading-relaxed">
+              <div className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
                 {workOrder.material_suggestion}
               </div>
             </div>
@@ -132,35 +132,35 @@ const WorkOrderCard = ({ workOrder, onApprove, onUpdate }) => {
 
       {/* Contractor Selection or Info */}
       {hasContractor ? (
-        <div className="mb-4 p-3 bg-purple-50 rounded-lg border border-purple-200">
+        <div className="mb-4 p-3 glass border border-purple-500/30 rounded-lg">
           <div className="flex items-start">
-            <User className="h-5 w-5 text-purple-600 mr-2 mt-0.5 flex-shrink-0" />
+            <User className="h-5 w-5 text-purple-400 mr-2 mt-0.5 flex-shrink-0" />
             <div className="flex-1">
-              <p className="text-xs font-medium text-purple-600 mb-1">
+              <p className="text-xs font-medium text-purple-400 mb-1">
                 Assigned Contractor
               </p>
-              <p className="text-sm font-medium text-purple-900">
+              <p className="text-sm font-medium text-white">
                 {workOrder.contractor_name || 'Contractor'}
               </p>
-              <p className="text-xs text-purple-700 capitalize">
+              <p className="text-xs text-gray-400 capitalize">
                 Specialty: {(workOrder.contractor_specialty || 'general').replace('_', ' ')}
               </p>
             </div>
           </div>
         </div>
       ) : isPending && contractors.length > 0 && (
-        <div className="mb-4 p-4 bg-gray-50 rounded-lg border border-gray-300">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+        <div className="mb-4 p-4 glass border border-gray-500/30 rounded-lg">
+          <label className="block text-sm font-medium text-gray-300 mb-2">
             Select Contractor
           </label>
           <select
             value={selectedContractor}
             onChange={(e) => setSelectedContractor(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent mb-3"
+            className="w-full px-3 py-2 glass border border-gray-500/30 rounded-lg text-white focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 mb-3 bg-transparent"
           >
-            <option value="">Choose a contractor...</option>
+            <option value="" className="bg-slate-800">Choose a contractor...</option>
             {contractors.map((contractor) => (
-              <option key={contractor.id} value={contractor.id}>
+              <option key={contractor.id} value={contractor.id} className="bg-slate-800">
                 {contractor.name} - {contractor.specialty.replace('_', ' ')} {contractor.rating && `(⭐ ${contractor.rating})`}
               </option>
             ))}
@@ -168,10 +168,10 @@ const WorkOrderCard = ({ workOrder, onApprove, onUpdate }) => {
           <button
             onClick={handleAssignContractor}
             disabled={!selectedContractor || isAssigning}
-            className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
+            className={`w-full py-2 px-4 rounded-lg font-medium transition-all duration-300 ${
               selectedContractor && !isAssigning
-                ? 'bg-purple-600 text-white hover:bg-purple-700'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                ? 'bg-gradient-to-r from-purple-500 to-indigo-500 text-white hover:from-purple-600 hover:to-indigo-600 shadow-lg shadow-purple-500/30'
+                : 'glass border border-gray-500/30 text-gray-500 cursor-not-allowed'
             }`}
           >
             {isAssigning ? 'Assigning...' : 'Assign Contractor'}
@@ -184,10 +184,10 @@ const WorkOrderCard = ({ workOrder, onApprove, onUpdate }) => {
         <button
           onClick={handleApprove}
           disabled={isApproving}
-          className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
+          className={`w-full py-2 px-4 rounded-lg font-medium transition-all duration-300 ${
             isApproving
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-green-600 text-white hover:bg-green-700'
+              ? 'glass border border-gray-500/30 text-gray-500 cursor-not-allowed'
+              : 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 shadow-lg shadow-green-500/30'
           }`}
         >
           {isApproving ? (
@@ -205,7 +205,7 @@ const WorkOrderCard = ({ workOrder, onApprove, onUpdate }) => {
       )}
 
       {isApproved && (
-        <div className="flex items-center justify-center text-green-600 py-2 bg-green-50 rounded-lg">
+        <div className="flex items-center justify-center text-green-400 py-2 glass border border-green-500/30 rounded-lg">
           <CheckCircle className="h-5 w-5 mr-2" />
           <span className="font-medium">Work Order Approved & Sent</span>
         </div>

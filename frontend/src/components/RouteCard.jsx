@@ -7,8 +7,8 @@ const RouteCard = ({ route }) => {
   const { distance, eta, route_type, co2_score, noise_score, explanation } = route;
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">
+    <div className="glass rounded-lg shadow-lg p-6 border border-blue-500/30">
+      <h3 className="text-lg font-semibold text-white mb-4 neon-blue">
         Route Details
       </h3>
 
@@ -16,19 +16,19 @@ const RouteCard = ({ route }) => {
         {/* ETA and Distance */}
         <div className="grid grid-cols-2 gap-4">
           <div className="flex items-center">
-            <Clock className="h-5 w-5 text-primary-600 mr-2" />
+            <Clock className="h-5 w-5 text-cyan-400 mr-2" />
             <div>
-              <p className="text-xs text-gray-500">Estimated Time</p>
-              <p className="text-sm font-medium text-gray-800">
+              <p className="text-xs text-gray-400">Estimated Time</p>
+              <p className="text-sm font-medium text-white">
                 {formatDuration(eta)}
               </p>
             </div>
           </div>
           <div className="flex items-center">
-            <MapPin className="h-5 w-5 text-primary-600 mr-2" />
+            <MapPin className="h-5 w-5 text-cyan-400 mr-2" />
             <div>
-              <p className="text-xs text-gray-500">Distance</p>
-              <p className="text-sm font-medium text-gray-800">
+              <p className="text-xs text-gray-400">Distance</p>
+              <p className="text-sm font-medium text-white">
                 {formatDistance(distance)}
               </p>
             </div>
@@ -37,11 +37,11 @@ const RouteCard = ({ route }) => {
 
         {/* Route Type Specific Metrics */}
         {route_type === 'eco' && co2_score !== undefined && (
-          <div className="flex items-center p-3 bg-green-50 rounded-lg">
-            <Leaf className="h-5 w-5 text-green-600 mr-2" />
+          <div className="flex items-center p-3 glass border border-green-500/30 rounded-lg">
+            <Leaf className="h-5 w-5 text-green-400 mr-2" />
             <div>
-              <p className="text-xs text-green-600 font-medium">CO₂ Score</p>
-              <p className="text-sm text-green-800">
+              <p className="text-xs text-green-400 font-medium">CO₂ Score</p>
+              <p className="text-sm text-gray-300">
                 {co2_score.toFixed(2)} - Low emissions route
               </p>
             </div>
@@ -49,11 +49,11 @@ const RouteCard = ({ route }) => {
         )}
 
         {route_type === 'quiet_walk' && noise_score !== undefined && (
-          <div className="flex items-center p-3 bg-blue-50 rounded-lg">
-            <Volume2 className="h-5 w-5 text-blue-600 mr-2" />
+          <div className="flex items-center p-3 glass border border-blue-500/30 rounded-lg">
+            <Volume2 className="h-5 w-5 text-blue-400 mr-2" />
             <div>
-              <p className="text-xs text-blue-600 font-medium">Average Noise</p>
-              <p className="text-sm text-blue-800">
+              <p className="text-xs text-blue-400 font-medium">Average Noise</p>
+              <p className="text-sm text-gray-300">
                 {noise_score.toFixed(1)} dB - Quiet route
               </p>
             </div>
@@ -62,21 +62,21 @@ const RouteCard = ({ route }) => {
 
         {/* AI Explanation */}
         {explanation && (
-          <div className="border-t pt-4">
-            <p className="text-xs text-gray-500 mb-2">Route Analysis</p>
-            <p className="text-sm text-gray-700 leading-relaxed">
+          <div className="border-t border-blue-500/30 pt-4">
+            <p className="text-xs text-gray-400 mb-2">Route Analysis</p>
+            <p className="text-sm text-gray-300 leading-relaxed">
               {explanation}
             </p>
           </div>
         )}
 
         {/* Route Type Badge */}
-        <div className="flex items-center justify-between pt-2 border-t">
-          <span className="text-xs text-gray-500">Route Type</span>
-          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-            route_type === 'drive' ? 'bg-blue-100 text-blue-700' :
-            route_type === 'eco' ? 'bg-green-100 text-green-700' :
-            'bg-purple-100 text-purple-700'
+        <div className="flex items-center justify-between pt-2 border-t border-blue-500/30">
+          <span className="text-xs text-gray-400">Route Type</span>
+          <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
+            route_type === 'drive' ? 'bg-blue-500/20 text-blue-400 border-blue-500/50' :
+            route_type === 'eco' ? 'bg-green-500/20 text-green-400 border-green-500/50' :
+            'bg-purple-500/20 text-purple-400 border-purple-500/50'
           }`}>
             {route_type === 'drive' ? 'Driving' :
              route_type === 'eco' ? 'Eco Drive' :
