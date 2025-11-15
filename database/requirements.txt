@@ -1,0 +1,14 @@
+# NeuraCity Database Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# Supabase client for database operations
+supabase==2.3.0
+
+# Faker for generating synthetic social posts
+Faker==22.0.0
+
+# Environment variable management
+python-dotenv==1.0.0
+
+# Optional: Direct PostgreSQL access
+# psycopg2-binary==2.9.9

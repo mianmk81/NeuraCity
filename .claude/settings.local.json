@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(dir /s /b \"C:\\Users\\mianm\\Downloads\\NeuraCity\\backend\\app\\*.py\")",
+      "Bash(dir /s /b \"C:\\Users\\mianm\\Downloads\\NeuraCity\\backend\\app\")",
+      "Bash(python scripts/generate_synthetic_posts.py:*)",
+      "Bash(npm install:*)",
+      "Bash(find:*)",
+      "Bash(python -m py_compile:*)",
+      "Bash(echo:*)",
+      "Bash(npm run build:*)",
+      "Bash(timeout 60 npm run build:*)",
+      "Bash(python -m pytest:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

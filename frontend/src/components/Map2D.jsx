@@ -1,0 +1,243 @@
+import { useEffect, useRef } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { getPriorityColor, getMoodColor, getNoiseColor, getTrafficColor } from '../lib/helpers';
+
+// Fix for default marker icons in Leaflet with Vite
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
+});
+
+const Map2D = ({
+  center = [37.7749, -122.4194], // Default to SF
+  zoom = 13,
+  height = '500px',
+  onMapClick,
+  issues = [],
+  moodAreas = [],
+  noiseSegments = [],
+  trafficSegments = [],
+  route = null,
+  markers = [],
+}) => {
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const layersRef = useRef({
+    issues: L.layerGroup(),
+    mood: L.layerGroup(),
+    noise: L.layerGroup(),
+    traffic: L.layerGroup(),
+    route: L.layerGroup(),
+    markers: L.layerGroup(),
+  });
+
+  // Initialize map
+  useEffect(() => {
+    if (!mapRef.current || mapInstanceRef.current) return;
+
+    mapInstanceRef.current = L.map(mapRef.current).setView(center, zoom);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 19,
+    }).addTo(mapInstanceRef.current);
+
+    // Add all layer groups to map
+    Object.values(layersRef.current).forEach(layer => {
+      layer.addTo(mapInstanceRef.current);
+    });
+
+    // Handle map clicks
+    if (onMapClick) {
+      mapInstanceRef.current.on('click', (e) => {
+        onMapClick({ lat: e.latlng.lat, lng: e.latlng.lng });
+      });
+    }
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, []);
+
+  // Update center and zoom
+  useEffect(() => {
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.setView(center, zoom);
+    }
+  }, [center, zoom]);
+
+  // Render issue markers
+  useEffect(() => {
+    const layer = layersRef.current.issues;
+    layer.clearLayers();
+
+    issues.forEach((issue) => {
+      const color = getPriorityColor(issue.priority);
+      const icon = L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="background-color: ${color}; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+      });
+
+      const marker = L.marker([issue.lat, issue.lng], { icon });
+
+      marker.bindPopup(`
+        <div style="min-width: 200px;">
+          <h3 style="font-weight: bold; margin-bottom: 8px;">${issue.issue_type}</h3>
+          ${issue.description ? `<p style="margin-bottom: 8px;">${issue.description}</p>` : ''}
+          <p style="font-size: 12px; color: #666;">
+            <strong>Priority:</strong> ${issue.priority || 'N/A'}<br>
+            <strong>Severity:</strong> ${issue.severity?.toFixed(2) || 'N/A'}<br>
+            <strong>Status:</strong> ${issue.status || 'open'}
+          </p>
+        </div>
+      `);
+
+      marker.addTo(layer);
+    });
+  }, [issues]);
+
+  // Render mood area circles
+  useEffect(() => {
+    const layer = layersRef.current.mood;
+    layer.clearLayers();
+
+    moodAreas.forEach((area) => {
+      const color = getMoodColor(area.mood_score);
+      const circle = L.circle([area.lat, area.lng], {
+        radius: 500, // 500 meters
+        fillColor: color,
+        fillOpacity: 0.3,
+        color: color,
+        weight: 2,
+      });
+
+      circle.bindPopup(`
+        <div style="min-width: 180px;">
+          <h3 style="font-weight: bold; margin-bottom: 8px;">${area.area_id || 'Area'}</h3>
+          <p style="font-size: 12px;">
+            <strong>Mood Score:</strong> ${area.mood_score?.toFixed(2) || 'N/A'}<br>
+            <strong>Posts:</strong> ${area.post_count || 0}
+          </p>
+        </div>
+      `);
+
+      circle.addTo(layer);
+    });
+  }, [moodAreas]);
+
+  // Render noise segments
+  useEffect(() => {
+    const layer = layersRef.current.noise;
+    layer.clearLayers();
+
+    noiseSegments.forEach((segment) => {
+      const color = getNoiseColor(segment.noise_db);
+      const circle = L.circle([segment.lat, segment.lng], {
+        radius: 200,
+        fillColor: color,
+        fillOpacity: 0.4,
+        color: color,
+        weight: 1,
+      });
+
+      circle.bindPopup(`
+        <div>
+          <h3 style="font-weight: bold; margin-bottom: 8px;">Noise Level</h3>
+          <p style="font-size: 12px;">
+            <strong>dB:</strong> ${segment.noise_db?.toFixed(1) || 'N/A'}
+          </p>
+        </div>
+      `);
+
+      circle.addTo(layer);
+    });
+  }, [noiseSegments]);
+
+  // Render traffic segments
+  useEffect(() => {
+    const layer = layersRef.current.traffic;
+    layer.clearLayers();
+
+    trafficSegments.forEach((segment) => {
+      const color = getTrafficColor(segment.congestion);
+      const circle = L.circle([segment.lat, segment.lng], {
+        radius: 150,
+        fillColor: color,
+        fillOpacity: 0.5,
+        color: color,
+        weight: 2,
+      });
+
+      circle.bindPopup(`
+        <div>
+          <h3 style="font-weight: bold; margin-bottom: 8px;">Traffic</h3>
+          <p style="font-size: 12px;">
+            <strong>Congestion:</strong> ${(segment.congestion * 100).toFixed(0)}%
+          </p>
+        </div>
+      `);
+
+      circle.addTo(layer);
+    });
+  }, [trafficSegments]);
+
+  // Render route polyline
+  useEffect(() => {
+    const layer = layersRef.current.route;
+    layer.clearLayers();
+
+    if (route && route.path && route.path.length > 0) {
+      const polyline = L.polyline(
+        route.path.map(p => [p.lat, p.lng]),
+        {
+          color: '#0284c7',
+          weight: 4,
+          opacity: 0.8,
+        }
+      );
+
+      polyline.addTo(layer);
+
+      // Fit map to route bounds
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+      }
+    }
+  }, [route]);
+
+  // Render custom markers (for origin/destination selection)
+  useEffect(() => {
+    const layer = layersRef.current.markers;
+    layer.clearLayers();
+
+    markers.forEach((markerData) => {
+      const icon = L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="background-color: ${markerData.color || '#0284c7'}; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; white-space: nowrap; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${markerData.label || ''}</div>`,
+        iconSize: [60, 30],
+        iconAnchor: [30, 15],
+      });
+
+      const marker = L.marker([markerData.lat, markerData.lng], { icon });
+      marker.addTo(layer);
+    });
+  }, [markers]);
+
+  return (
+    <div
+      ref={mapRef}
+      style={{ height, width: '100%' }}
+      className="rounded-lg shadow-lg z-0"
+    />
+  );
+};
+
+export default Map2D;

@@ -1,0 +1,512 @@
+{
+  "MIDTOWN": [
+    {
+      "area_id": "MIDTOWN",
+      "area_name": "Midtown",
+      "lat": 40.7589,
+      "lng": -73.9851,
+      "text": "Passing through Midtown on my commute",
+      "timestamp": "2025-11-07T07:51:51.174846",
+      "sentiment_expected": "neutral",
+      "author": "user_7924"
+    },
+    {
+      "area_id": "MIDTOWN",
+      "area_name": "Midtown",
+      "lat": 40.7589,
+      "lng": -73.9851,
+      "text": "Traffic is absolutely terrible in Midtown right now",
+      "timestamp": "2025-11-08T07:17:38.174846",
+      "sentiment_expected": "negative",
+      "author": "user_1488"
+    },
+    {
+      "area_id": "MIDTOWN",
+      "area_name": "Midtown",
+      "lat": 40.7589,
+      "lng": -73.9851,
+      "text": "Best neighborhood in the city hands down - Midtown!",
+      "timestamp": "2025-11-08T09:15:43.174846",
+      "sentiment_expected": "positive",
+      "author": "user_1434"
+    },
+    {
+      "area_id": "MIDTOWN",
+      "area_name": "Midtown",
+      "lat": 40.7589,
+      "lng": -73.9851,
+      "text": "Just had an amazing coffee at the new cafe in Midtown",
+      "timestamp": "2025-11-08T11:44:32.174846",
+      "sentiment_expected": "positive",
+      "author": "user_6881"
+    },
+    {
+      "area_id": "MIDTOWN",
+      "area_name": "Midtown",
+      "lat": 40.7589,
+      "lng": -73.9851,
+      "text": "Really enjoying the vibe in Midtown lately",
+      "timestamp": "2025-11-08T14:23:56.174846",
+      "sentiment_expected": "positive",
+      "author": "user_5012"
+    },
+    {
+      "area_id": "MIDTOWN",
+      "area_name": "Midtown",
+      "lat": 40.7589,
+      "lng": -73.9851,
+      "text": "Just had an amazing coffee at the new cafe in Midtown",
+      "timestamp": "2025-11-09T22:59:10.174846",
+      "sentiment_expected": "positive",
+      "author": "user_9935"
+    },
+    {
+      "area_id": "MIDTOWN",
+      "area_name": "Midtown",
+      "lat": 40.7589,
+      "lng": -73.9851,
+      "text": "Wonderful atmosphere in Midtown this morning",
+      "timestamp": "2025-11-11T09:04:35.174846",
+      "sentiment_expected": "positive",
+      "author": "user_6514"
+    },
+    {
+      "area_id": "MIDTOWN",
+      "area_name": "Midtown",
+      "lat": 40.7589,
+      "lng": -73.9851,
+      "text": "Disappointed with how dirty Midtown has become",
+      "timestamp": "2025-11-11T10:09:20.174846",
+      "sentiment_expected": "negative",
+      "author": "user_1711"
+    },
+    {
+      "area_id": "MIDTOWN",
+      "area_name": "Midtown",
+      "lat": 40.7589,
+      "lng": -73.9851,
+      "text": "Such a positive energy in Midtown today",
+      "timestamp": "2025-11-12T08:09:55.174846",
+      "sentiment_expected": "positive",
+      "author": "user_5557"
+    },
+    {
+      "area_id": "MIDTOWN",
+      "area_name": "Midtown",
+      "lat": 40.7589,
+      "lng": -73.9851,
+      "text": "Grateful to live near Midtown, it's beautiful",
+      "timestamp": "2025-11-14T01:26:45.174846",
+      "sentiment_expected": "positive",
+      "author": "user_9928"
+    }
+  ],
+  "DOWNTOWN": [
+    {
+      "area_id": "DOWNTOWN",
+      "area_name": "Downtown",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "text": "Avoid Downtown if you can, complete gridlock",
+      "timestamp": "2025-11-08T02:46:07.174846",
+      "sentiment_expected": "negative",
+      "author": "user_9751"
+    },
+    {
+      "area_id": "DOWNTOWN",
+      "area_name": "Downtown",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "text": "Too much traffic and not enough parking in Downtown",
+      "timestamp": "2025-11-08T04:55:24.174846",
+      "sentiment_expected": "negative",
+      "author": "user_6925"
+    },
+    {
+      "area_id": "DOWNTOWN",
+      "area_name": "Downtown",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "text": "Love walking through Downtown on days like this",
+      "timestamp": "2025-11-08T11:23:24.174846",
+      "sentiment_expected": "positive",
+      "author": "user_6977"
+    },
+    {
+      "area_id": "DOWNTOWN",
+      "area_name": "Downtown",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "text": "Wonderful atmosphere in Downtown this morning",
+      "timestamp": "2025-11-09T05:20:52.174846",
+      "sentiment_expected": "positive",
+      "author": "user_5374"
+    },
+    {
+      "area_id": "DOWNTOWN",
+      "area_name": "Downtown",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "text": "Heading to work through Downtown as usual",
+      "timestamp": "2025-11-09T13:58:46.174846",
+      "sentiment_expected": "neutral",
+      "author": "user_4733"
+    },
+    {
+      "area_id": "DOWNTOWN",
+      "area_name": "Downtown",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "text": "Normal amount of traffic in Downtown",
+      "timestamp": "2025-11-10T00:41:11.174846",
+      "sentiment_expected": "neutral",
+      "author": "user_6168"
+    },
+    {
+      "area_id": "DOWNTOWN",
+      "area_name": "Downtown",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "text": "The improvements in Downtown are really paying off",
+      "timestamp": "2025-11-10T05:16:39.174846",
+      "sentiment_expected": "positive",
+      "author": "user_5422"
+    },
+    {
+      "area_id": "DOWNTOWN",
+      "area_name": "Downtown",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "text": "Routine trip to Downtown this morning",
+      "timestamp": "2025-11-10T18:15:42.174846",
+      "sentiment_expected": "neutral",
+      "author": "user_4814"
+    },
+    {
+      "area_id": "DOWNTOWN",
+      "area_name": "Downtown",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "text": "The quality of life in Downtown is declining",
+      "timestamp": "2025-11-12T19:47:18.174846",
+      "sentiment_expected": "negative",
+      "author": "user_7201"
+    },
+    {
+      "area_id": "DOWNTOWN",
+      "area_name": "Downtown",
+      "lat": 40.7128,
+      "lng": -74.006,
+      "text": "Great to see so many people out and about in Downtown",
+      "timestamp": "2025-11-14T00:11:41.174846",
+      "sentiment_expected": "positive",
+      "author": "user_1916"
+    }
+  ],
+  "CAMPUS": [
+    {
+      "area_id": "CAMPUS",
+      "area_name": "Campus",
+      "lat": 40.8075,
+      "lng": -73.9626,
+      "text": "Perfect weather for a walk in Campus",
+      "timestamp": "2025-11-08T08:27:02.174846",
+      "sentiment_expected": "positive",
+      "author": "user_1771"
+    },
+    {
+      "area_id": "CAMPUS",
+      "area_name": "Campus",
+      "lat": 40.8075,
+      "lng": -73.9626,
+      "text": "Best neighborhood in the city hands down - Campus!",
+      "timestamp": "2025-11-08T22:15:48.174846",
+      "sentiment_expected": "positive",
+      "author": "user_9085"
+    },
+    {
+      "area_id": "CAMPUS",
+      "area_name": "Campus",
+      "lat": 40.8075,
+      "lng": -73.9626,
+      "text": "Really enjoying the vibe in Campus lately",
+      "timestamp": "2025-11-08T23:35:08.174846",
+      "sentiment_expected": "positive",
+      "author": "user_3287"
+    },
+    {
+      "area_id": "CAMPUS",
+      "area_name": "Campus",
+      "lat": 40.8075,
+      "lng": -73.9626,
+      "text": "So peaceful and clean in Campus today",
+      "timestamp": "2025-11-09T19:25:28.174846",
+      "sentiment_expected": "positive",
+      "author": "user_6155"
+    },
+    {
+      "area_id": "CAMPUS",
+      "area_name": "Campus",
+      "lat": 40.8075,
+      "lng": -73.9626,
+      "text": "Grateful to live near Campus, it's beautiful",
+      "timestamp": "2025-11-09T19:54:12.174846",
+      "sentiment_expected": "positive",
+      "author": "user_9179"
+    },
+    {
+      "area_id": "CAMPUS",
+      "area_name": "Campus",
+      "lat": 40.8075,
+      "lng": -73.9626,
+      "text": "The community feel in Campus is unmatched",
+      "timestamp": "2025-11-10T05:48:24.174846",
+      "sentiment_expected": "positive",
+      "author": "user_9830"
+    },
+    {
+      "area_id": "CAMPUS",
+      "area_name": "Campus",
+      "lat": 40.8075,
+      "lng": -73.9626,
+      "text": "The community feel in Campus is unmatched",
+      "timestamp": "2025-11-10T10:30:01.174846",
+      "sentiment_expected": "positive",
+      "author": "user_8019"
+    },
+    {
+      "area_id": "CAMPUS",
+      "area_name": "Campus",
+      "lat": 40.8075,
+      "lng": -73.9626,
+      "text": "So peaceful and clean in Campus today",
+      "timestamp": "2025-11-12T01:12:27.174846",
+      "sentiment_expected": "positive",
+      "author": "user_8517"
+    },
+    {
+      "area_id": "CAMPUS",
+      "area_name": "Campus",
+      "lat": 40.8075,
+      "lng": -73.9626,
+      "text": "Great to see so many people out and about in Campus",
+      "timestamp": "2025-11-12T02:18:18.174846",
+      "sentiment_expected": "positive",
+      "author": "user_4593"
+    },
+    {
+      "area_id": "CAMPUS",
+      "area_name": "Campus",
+      "lat": 40.8075,
+      "lng": -73.9626,
+      "text": "Really enjoying the vibe in Campus lately",
+      "timestamp": "2025-11-12T02:49:08.174846",
+      "sentiment_expected": "positive",
+      "author": "user_2084"
+    }
+  ],
+  "PARK_DISTRICT": [
+    {
+      "area_id": "PARK_DISTRICT",
+      "area_name": "Park District",
+      "lat": 40.7829,
+      "lng": -73.9654,
+      "text": "The Park District area is looking great today!",
+      "timestamp": "2025-11-08T13:54:32.174846",
+      "sentiment_expected": "positive",
+      "author": "user_3621"
+    },
+    {
+      "area_id": "PARK_DISTRICT",
+      "area_name": "Park District",
+      "lat": 40.7829,
+      "lng": -73.9654,
+      "text": "Really enjoying the vibe in Park District lately",
+      "timestamp": "2025-11-08T14:27:47.174846",
+      "sentiment_expected": "positive",
+      "author": "user_8123"
+    },
+    {
+      "area_id": "PARK_DISTRICT",
+      "area_name": "Park District",
+      "lat": 40.7829,
+      "lng": -73.9654,
+      "text": "Grateful to live near Park District, it's beautiful",
+      "timestamp": "2025-11-08T15:20:13.174846",
+      "sentiment_expected": "positive",
+      "author": "user_9797"
+    },
+    {
+      "area_id": "PARK_DISTRICT",
+      "area_name": "Park District",
+      "lat": 40.7829,
+      "lng": -73.9654,
+      "text": "Love walking through Park District on days like this",
+      "timestamp": "2025-11-09T04:02:17.174846",
+      "sentiment_expected": "positive",
+      "author": "user_1053"
+    },
+    {
+      "area_id": "PARK_DISTRICT",
+      "area_name": "Park District",
+      "lat": 40.7829,
+      "lng": -73.9654,
+      "text": "Best neighborhood in the city hands down - Park District!",
+      "timestamp": "2025-11-10T10:41:20.174846",
+      "sentiment_expected": "positive",
+      "author": "user_3927"
+    },
+    {
+      "area_id": "PARK_DISTRICT",
+      "area_name": "Park District",
+      "lat": 40.7829,
+      "lng": -73.9654,
+      "text": "Perfect weather for a walk in Park District",
+      "timestamp": "2025-11-10T11:41:23.174846",
+      "sentiment_expected": "positive",
+      "author": "user_6573"
+    },
+    {
+      "area_id": "PARK_DISTRICT",
+      "area_name": "Park District",
+      "lat": 40.7829,
+      "lng": -73.9654,
+      "text": "The improvements in Park District are really paying off",
+      "timestamp": "2025-11-11T22:02:34.174846",
+      "sentiment_expected": "positive",
+      "author": "user_8668"
+    },
+    {
+      "area_id": "PARK_DISTRICT",
+      "area_name": "Park District",
+      "lat": 40.7829,
+      "lng": -73.9654,
+      "text": "Such a positive energy in Park District today",
+      "timestamp": "2025-11-12T08:56:03.174846",
+      "sentiment_expected": "positive",
+      "author": "user_2040"
+    },
+    {
+      "area_id": "PARK_DISTRICT",
+      "area_name": "Park District",
+      "lat": 40.7829,
+      "lng": -73.9654,
+      "text": "So peaceful and clean in Park District today",
+      "timestamp": "2025-11-13T09:50:39.174846",
+      "sentiment_expected": "positive",
+      "author": "user_2743"
+    },
+    {
+      "area_id": "PARK_DISTRICT",
+      "area_name": "Park District",
+      "lat": 40.7829,
+      "lng": -73.9654,
+      "text": "Really enjoying the vibe in Park District lately",
+      "timestamp": "2025-11-13T16:05:13.174846",
+      "sentiment_expected": "positive",
+      "author": "user_1188"
+    }
+  ],
+  "RESIDENTIAL_ZONE": [
+    {
+      "area_id": "RESIDENTIAL_ZONE",
+      "area_name": "Residential Zone",
+      "lat": 40.7282,
+      "lng": -73.7949,
+      "text": "Waiting for my appointment in Residential Zone",
+      "timestamp": "2025-11-07T06:08:16.174846",
+      "sentiment_expected": "neutral",
+      "author": "user_6310"
+    },
+    {
+      "area_id": "RESIDENTIAL_ZONE",
+      "area_name": "Residential Zone",
+      "lat": 40.7282,
+      "lng": -73.7949,
+      "text": "Stopped by the store in Residential Zone",
+      "timestamp": "2025-11-09T05:01:33.174846",
+      "sentiment_expected": "neutral",
+      "author": "user_9689"
+    },
+    {
+      "area_id": "RESIDENTIAL_ZONE",
+      "area_name": "Residential Zone",
+      "lat": 40.7282,
+      "lng": -73.7949,
+      "text": "Passing through Residential Zone on my commute",
+      "timestamp": "2025-11-09T15:54:30.174846",
+      "sentiment_expected": "neutral",
+      "author": "user_7126"
+    },
+    {
+      "area_id": "RESIDENTIAL_ZONE",
+      "area_name": "Residential Zone",
+      "lat": 40.7282,
+      "lng": -73.7949,
+      "text": "Heading to work through Residential Zone as usual",
+      "timestamp": "2025-11-10T03:43:00.174846",
+      "sentiment_expected": "neutral",
+      "author": "user_4946"
+    },
+    {
+      "area_id": "RESIDENTIAL_ZONE",
+      "area_name": "Residential Zone",
+      "lat": 40.7282,
+      "lng": -73.7949,
+      "text": "Routine trip to Residential Zone this morning",
+      "timestamp": "2025-11-10T20:53:59.174846",
+      "sentiment_expected": "neutral",
+      "author": "user_9317"
+    },
+    {
+      "area_id": "RESIDENTIAL_ZONE",
+      "area_name": "Residential Zone",
+      "lat": 40.7282,
+      "lng": -73.7949,
+      "text": "Nothing special happening in Residential Zone today",
+      "timestamp": "2025-11-11T15:41:49.174846",
+      "sentiment_expected": "neutral",
+      "author": "user_6038"
+    },
+    {
+      "area_id": "RESIDENTIAL_ZONE",
+      "area_name": "Residential Zone",
+      "lat": 40.7282,
+      "lng": -73.7949,
+      "text": "Routine trip to Residential Zone this morning",
+      "timestamp": "2025-11-13T03:31:34.174846",
+      "sentiment_expected": "neutral",
+      "author": "user_2133"
+    },
+    {
+      "area_id": "RESIDENTIAL_ZONE",
+      "area_name": "Residential Zone",
+      "lat": 40.7282,
+      "lng": -73.7949,
+      "text": "Heading to work through Residential Zone as usual",
+      "timestamp": "2025-11-13T04:17:17.174846",
+      "sentiment_expected": "neutral",
+      "author": "user_2832"
+    },
+    {
+      "area_id": "RESIDENTIAL_ZONE",
+      "area_name": "Residential Zone",
+      "lat": 40.7282,
+      "lng": -73.7949,
+      "text": "Normal amount of traffic in Residential Zone",
+      "timestamp": "2025-11-13T17:07:59.174846",
+      "sentiment_expected": "neutral",
+      "author": "user_3060"
+    },
+    {
+      "area_id": "RESIDENTIAL_ZONE",
+      "area_name": "Residential Zone",
+      "lat": 40.7282,
+      "lng": -73.7949,
+      "text": "Another day in Residential Zone",
+      "timestamp": "2025-11-14T03:13:33.174846",
+      "sentiment_expected": "neutral",
+      "author": "user_2403"
+    }
+  ]
+}
