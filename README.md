@@ -113,9 +113,6 @@ NeuraCity/
 - Admin validation required for all actions
 - Synthetic data only (no real personal data)
 
-## 📄 License
-
-MIT License - Open source and free to use
 
 ## 🤝 Contributing
 
