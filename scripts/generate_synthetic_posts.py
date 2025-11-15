@@ -31,44 +31,44 @@ except ImportError:
     print("WARNING: faker library not available. Install with: pip install faker")
 
 
-# Define city areas with coordinates
+# Define city areas with coordinates (Atlanta, Georgia - for mood analysis)
 CITY_AREAS = {
     'MIDTOWN': {
-        'lat': 40.7589,
-        'lng': -73.9851,
+        'lat': 33.7850,
+        'lng': -84.3850,
         'name': 'Midtown',
         'characteristics': 'busy, commercial, office buildings, high traffic'
     },
     'DOWNTOWN': {
-        'lat': 40.7128,
-        'lng': -74.0060,
+        'lat': 33.7490,
+        'lng': -84.3880,
         'name': 'Downtown',
         'characteristics': 'financial district, historic, mixed use, tourist attractions'
     },
     'CAMPUS': {
-        'lat': 40.8075,
-        'lng': -73.9626,
+        'lat': 33.7750,
+        'lng': -84.3960,
         'name': 'Campus',
-        'characteristics': 'university area, young crowd, cafes, student life'
+        'characteristics': 'university area (Georgia Tech), young crowd, cafes, student life'
     },
     'PARK_DISTRICT': {
-        'lat': 40.7829,
-        'lng': -73.9654,
+        'lat': 33.7850,
+        'lng': -84.3730,
         'name': 'Park District',
-        'characteristics': 'green spaces, quiet, recreational, family-friendly'
+        'characteristics': 'green spaces (Piedmont Park), quiet, recreational, family-friendly'
     },
     'RESIDENTIAL_ZONE': {
-        'lat': 40.7282,
-        'lng': -73.7949,
+        'lat': 33.7600,
+        'lng': -84.3800,
         'name': 'Residential Zone',
         'characteristics': 'residential, quiet streets, neighborhoods, community feel'
     }
 }
 
 
-# Sentiment-specific post templates
+# Sentiment-specific post templates (Atlanta, Georgia)
 POSITIVE_TEMPLATES = [
-    "Beautiful day in {area}! Love this city!",
+    "Beautiful day in {area}! Love Atlanta!",
     "Just had an amazing coffee at the new cafe in {area}",
     "The {area} area is looking great today!",
     "Wonderful atmosphere in {area} this morning",
@@ -76,13 +76,16 @@ POSITIVE_TEMPLATES = [
     "Great to see so many people out and about in {area}",
     "The improvements in {area} are really paying off",
     "Love walking through {area} on days like this",
-    "Best neighborhood in the city hands down - {area}!",
+    "Best neighborhood in Atlanta hands down - {area}!",
     "Such a positive energy in {area} today",
-    "Grateful to live near {area}, it's beautiful",
+    "Grateful to live near {area} in Atlanta, it's beautiful",
     "The community feel in {area} is unmatched",
     "Perfect weather for a walk in {area}",
     "The new developments in {area} look fantastic",
     "So peaceful and clean in {area} today",
+    "Atlanta's {area} is the best!",
+    "Peachtree Street vibes in {area} are amazing",
+    "Love the ATL energy in {area}!",
 ]
 
 NEGATIVE_TEMPLATES = [
@@ -101,6 +104,9 @@ NEGATIVE_TEMPLATES = [
     "Disappointed with how dirty {area} has become",
     "Too much traffic and not enough parking in {area}",
     "The quality of life in {area} is declining",
+    "Atlanta traffic in {area} is the worst",
+    "I-75/I-85 merge near {area} is a nightmare",
+    "Peachtree traffic in {area} is insane",
 ]
 
 NEUTRAL_TEMPLATES = [
@@ -137,7 +143,8 @@ class SyntheticPostGenerator:
         random.seed(seed)
 
         if FAKER_AVAILABLE:
-            self.fake = Faker()
+            # Use US locale for Atlanta, Georgia
+            self.fake = Faker('en_US')
             Faker.seed(seed)
         else:
             self.fake = None

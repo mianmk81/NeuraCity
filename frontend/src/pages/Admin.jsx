@@ -1,10 +1,20 @@
-import { useState, useEffect } from 'react';
+import { AlertTriangle, CheckCircle, Eye, List, Loader2, Wrench, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import WorkOrderCard from '../components/WorkOrderCard';
-import { getEmergencyQueue, getWorkOrders, getIssues, approveWorkOrder, markEmergencyReviewed, updateIssueStatus } from '../lib/api';
-import { Loader2, AlertTriangle, Wrench, List, CheckCircle, Clock } from 'lucide-react';
+import { approveWorkOrder, getEmergencyQueue, getIssues, getWorkOrders, markEmergencyReviewed, updateIssueStatus } from '../lib/api';
 import { formatDate, formatIssueType, getPriorityColor } from '../lib/helpers';
 
+// Helper function to get full image URL
+const getImageUrl = (imageUrl) => {
+  if (!imageUrl) return null;
+  if (imageUrl.startsWith('http')) return imageUrl;
+  const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+  const backendURL = baseURL.replace('/api/v1', '');
+  return `${backendURL}/${imageUrl}`;
+};
+
 const Admin = () => {
+  const [selectedImage, setSelectedImage] = useState(null);
   const [activeTab, setActiveTab] = useState('emergency');
   const [emergencyQueue, setEmergencyQueue] = useState([]);
   const [workOrders, setWorkOrders] = useState([]);
@@ -52,6 +62,13 @@ const Admin = () => {
     } catch (err) {
       alert(err.message || 'Failed to approve work order');
     }
+  };
+
+  const handleWorkOrderUpdate = (updatedWorkOrder) => {
+    // Update the work order in state without refetching
+    setWorkOrders(orders => 
+      orders.map(order => order.id === updatedWorkOrder.id ? updatedWorkOrder : order)
+    );
   };
 
   const handleMarkEmergencyReviewed = async (id) => {
@@ -171,6 +188,17 @@ const Admin = () => {
                               {emergency.issue.description}
                             </p>
                           )}
+                          {emergency.issue.image_url && (
+                            <div className="mt-2">
+                              <button
+                                onClick={() => setSelectedImage(getImageUrl(emergency.issue.image_url))}
+                                className="flex items-center text-primary-600 hover:text-primary-800 font-medium text-sm"
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                View Evidence Image
+                              </button>
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -215,6 +243,7 @@ const Admin = () => {
                         key={workOrder.id}
                         workOrder={workOrder}
                         onApprove={handleApproveWorkOrder}
+                        onUpdate={handleWorkOrderUpdate}
                       />
                     ))}
                   </div>
@@ -300,14 +329,13 @@ const Admin = () => {
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm">
                               {issue.image_url && (
-                                <a
-                                  href={issue.image_url}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-primary-600 hover:text-primary-800 underline"
+                                <button
+                                  onClick={() => setSelectedImage(getImageUrl(issue.image_url))}
+                                  className="flex items-center text-primary-600 hover:text-primary-800 font-medium"
                                 >
+                                  <Eye className="h-4 w-4 mr-1" />
                                   View Image
-                                </a>
+                                </button>
                               )}
                             </td>
                           </tr>
@@ -321,6 +349,30 @@ const Admin = () => {
           </>
         )}
       </div>
+      
+      {/* Image Modal */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedImage(null)}
+        >
+          <div className="relative max-w-4xl max-h-full">
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute -top-10 right-0 text-white hover:text-gray-300 transition-colors"
+            >
+              <X className="h-8 w-8" />
+            </button>
+            <img
+              src={selectedImage}
+              alt="Issue"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <p className="text-white text-center mt-2 text-sm">Click outside to close</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

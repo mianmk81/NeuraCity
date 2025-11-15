@@ -12,7 +12,7 @@ L.Icon.Default.mergeOptions({
 });
 
 const Map2D = ({
-  center = [37.7749, -122.4194], // Default to SF
+  center = [40.7128, -74.0060], // Default to New York City
   zoom = 13,
   height = '500px',
   onMapClick,
@@ -112,19 +112,20 @@ const Map2D = ({
     moodAreas.forEach((area) => {
       const color = getMoodColor(area.mood_score);
       const circle = L.circle([area.lat, area.lng], {
-        radius: 500, // 500 meters
+        radius: 800, // Increased from 500 to 800 meters for better visibility
         fillColor: color,
-        fillOpacity: 0.3,
+        fillOpacity: 0.5, // Increased from 0.3 to 0.5 for better visibility
         color: color,
-        weight: 2,
+        weight: 3, // Increased from 2 to 3
       });
 
       circle.bindPopup(`
-        <div style="min-width: 180px;">
-          <h3 style="font-weight: bold; margin-bottom: 8px;">${area.area_id || 'Area'}</h3>
-          <p style="font-size: 12px;">
+        <div style="min-width: 200px; padding: 4px;">
+          <h3 style="font-weight: bold; margin-bottom: 8px; color: ${color};">${area.area_id || 'Area'}</h3>
+          <p style="font-size: 13px; line-height: 1.6;">
             <strong>Mood Score:</strong> ${area.mood_score?.toFixed(2) || 'N/A'}<br>
-            <strong>Posts:</strong> ${area.post_count || 0}
+            <strong>Posts Analyzed:</strong> ${area.post_count || 0}<br>
+            <strong>Sentiment:</strong> ${area.mood_score >= 0.5 ? '😊 Positive' : area.mood_score >= 0 ? '😐 Neutral' : '😞 Negative'}
           </p>
         </div>
       `);
@@ -141,18 +142,19 @@ const Map2D = ({
     noiseSegments.forEach((segment) => {
       const color = getNoiseColor(segment.noise_db);
       const circle = L.circle([segment.lat, segment.lng], {
-        radius: 200,
+        radius: 300, // Increased from 200 for better visibility
         fillColor: color,
-        fillOpacity: 0.4,
+        fillOpacity: 0.6, // Increased from 0.4 for better visibility
         color: color,
-        weight: 1,
+        weight: 2, // Increased from 1
       });
 
       circle.bindPopup(`
-        <div>
-          <h3 style="font-weight: bold; margin-bottom: 8px;">Noise Level</h3>
-          <p style="font-size: 12px;">
-            <strong>dB:</strong> ${segment.noise_db?.toFixed(1) || 'N/A'}
+        <div style="min-width: 150px; padding: 4px;">
+          <h3 style="font-weight: bold; margin-bottom: 8px; color: ${color};">🔊 Noise Level</h3>
+          <p style="font-size: 13px;">
+            <strong>Decibels:</strong> ${segment.noise_db?.toFixed(1) || 'N/A'} dB<br>
+            <strong>Level:</strong> ${segment.noise_db > 70 ? 'High' : segment.noise_db > 50 ? 'Medium' : 'Low'}
           </p>
         </div>
       `);
@@ -169,18 +171,19 @@ const Map2D = ({
     trafficSegments.forEach((segment) => {
       const color = getTrafficColor(segment.congestion);
       const circle = L.circle([segment.lat, segment.lng], {
-        radius: 150,
+        radius: 250, // Increased from 150 for better visibility
         fillColor: color,
-        fillOpacity: 0.5,
+        fillOpacity: 0.6, // Increased from 0.5 for better visibility
         color: color,
-        weight: 2,
+        weight: 3, // Increased from 2
       });
 
       circle.bindPopup(`
-        <div>
-          <h3 style="font-weight: bold; margin-bottom: 8px;">Traffic</h3>
-          <p style="font-size: 12px;">
-            <strong>Congestion:</strong> ${(segment.congestion * 100).toFixed(0)}%
+        <div style="min-width: 150px; padding: 4px;">
+          <h3 style="font-weight: bold; margin-bottom: 8px; color: ${color};">🚗 Traffic</h3>
+          <p style="font-size: 13px;">
+            <strong>Congestion:</strong> ${(segment.congestion * 100).toFixed(0)}%<br>
+            <strong>Level:</strong> ${segment.congestion > 0.7 ? 'Heavy' : segment.congestion > 0.4 ? 'Moderate' : 'Light'}
           </p>
         </div>
       `);
@@ -195,8 +198,19 @@ const Map2D = ({
     layer.clearLayers();
 
     if (route && route.path && route.path.length > 0) {
+      // Handle both tuple format [lat, lng] and object format {lat, lng}
+      const pathCoords = route.path.map(p => {
+        if (Array.isArray(p)) {
+          // Tuple format: [lat, lng]
+          return [p[0], p[1]];
+        } else {
+          // Object format: {lat, lng}
+          return [p.lat, p.lng];
+        }
+      });
+      
       const polyline = L.polyline(
-        route.path.map(p => [p.lat, p.lng]),
+        pathCoords,
         {
           color: '#0284c7',
           weight: 4,

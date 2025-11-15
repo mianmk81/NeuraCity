@@ -162,6 +162,8 @@ const MoodMap = () => {
                 <Map2D
                   height="calc(100vh - 200px)"
                   moodAreas={moodAreas}
+                  center={[33.7490, -84.3880]} // Atlanta, Georgia
+                  zoom={13}
                 />
               )}
             </div>

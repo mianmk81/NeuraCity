@@ -33,50 +33,50 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
-# Initialize Faker
-fake = Faker()
+# Initialize Faker with US locale for Atlanta, Georgia
+fake = Faker('en_US')
 
 # ============================================================================
 # Configuration
 # ============================================================================
 
-# City areas with coordinates and characteristics
+# City areas with coordinates and characteristics (Atlanta, Georgia - for mood analysis)
 CITY_AREAS = {
     'MIDTOWN': {
-        'lat': 40.7580,
-        'lng': -73.9855,
+        'lat': 33.7850,
+        'lng': -84.3850,
         'base_mood': 0.15,
         'mood_variance': 0.3,
         'traffic_base': 0.65,
         'noise_base': 78.0,
     },
     'DOWNTOWN': {
-        'lat': 40.7489,
-        'lng': -73.9680,
+        'lat': 33.7490,
+        'lng': -84.3880,
         'base_mood': 0.05,
         'mood_variance': 0.25,
         'traffic_base': 0.75,
         'noise_base': 83.0,
     },
     'CAMPUS': {
-        'lat': 40.7295,
-        'lng': -73.9965,
+        'lat': 33.7750,
+        'lng': -84.3960,
         'base_mood': 0.45,
         'mood_variance': 0.35,
         'traffic_base': 0.30,
         'noise_base': 56.0,
     },
     'PARK_DISTRICT': {
-        'lat': 40.7829,
-        'lng': -73.9654,
+        'lat': 33.7850,
+        'lng': -84.3730,
         'base_mood': 0.65,
         'mood_variance': 0.20,
         'traffic_base': 0.15,
         'noise_base': 42.0,
     },
     'RESIDENTIAL_ZONE': {
-        'lat': 40.7189,
-        'lng': -73.9842,
+        'lat': 33.7600,
+        'lng': -84.3800,
         'base_mood': 0.25,
         'mood_variance': 0.30,
         'traffic_base': 0.40,
@@ -84,7 +84,7 @@ CITY_AREAS = {
     }
 }
 
-# Sentiment templates for social posts
+# Sentiment templates for social posts (Atlanta, Georgia)
 POSITIVE_TEMPLATES = [
     "Beautiful weather in {area} today!",
     "Just had an amazing lunch in {area}",
@@ -96,6 +96,11 @@ POSITIVE_TEMPLATES = [
     "Loving the vibe in {area} lately",
     "{area} is looking beautiful this season",
     "Perfect day for a walk in {area}",
+    "Atlanta's {area} is amazing!",
+    "Love the ATL vibes in {area}!",
+    "Peachtree Street area {area} is great",
+    "Georgia Tech area {area} is so vibrant",
+    "Piedmont Park near {area} is beautiful",
 ]
 
 NEGATIVE_TEMPLATES = [
@@ -109,6 +114,10 @@ NEGATIVE_TEMPLATES = [
     "{area} needs better infrastructure",
     "Accident blocking traffic in {area}",
     "Power outage in {area} again",
+    "Atlanta traffic in {area} is the worst",
+    "I-75/I-85 merge near {area} is a nightmare",
+    "Peachtree traffic in {area} is insane",
+    "The connector near {area} is always backed up",
 ]
 
 NEUTRAL_TEMPLATES = [

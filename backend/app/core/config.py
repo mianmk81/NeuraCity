@@ -48,7 +48,11 @@ class Settings(BaseSettings):
 
     # AI Model Configuration
     SENTIMENT_MODEL: str = "distilbert-base-uncased-finetuned-sst-2-english"
-    GEMINI_MODEL: str = "gemini-1.5-flash"
+    GEMINI_MODEL: str = "gemini-pro"  # Use gemini-pro instead of gemini-1.5-flash
+
+    # Routing API Configuration (optional)
+    OPENROUTESERVICE_API_KEY: str = ""  # Optional, for OpenRouteService
+    OSRM_SERVER_URL: str = "https://router.project-osrm.org"  # Public OSRM instance
 
     # Database Query Limits
     MAX_ISSUES_LIMIT: int = 1000

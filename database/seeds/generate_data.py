@@ -34,7 +34,7 @@ except ImportError as e:
 # CONFIGURATION
 # =====================================================
 
-# City areas with coordinates and characteristics
+# City areas with coordinates and characteristics (New York City)
 CITY_AREAS = {
     'DOWNTOWN': {
         'lat': 40.7128,
@@ -94,7 +94,7 @@ CITY_AREAS = {
     }
 }
 
-# Road segments for traffic and noise
+# Road segments for traffic and noise (New York City)
 ROAD_SEGMENTS = [
     # Main Street
     {'id': 'MAIN_ST_01', 'lat': 40.7128, 'lng': -74.0060, 'type': 'arterial'},
@@ -127,18 +127,23 @@ ROAD_SEGMENTS = [
     {'id': 'WATER_02', 'lat': 40.7071, 'lng': -74.0077, 'type': 'local'},
 ]
 
-# Post templates for different moods
+# Post templates for different moods (New York City)
 POSITIVE_TEMPLATES = [
     "Beautiful weather today! Perfect for a walk.",
     "Love this neighborhood! So vibrant.",
     "Great coffee shop opened nearby!",
     "Just had an amazing experience at the local park.",
-    "This city keeps getting better!",
+    "NYC keeps getting better!",
     "Finally some sunshine! Feeling great.",
     "Weekend vibes are immaculate here.",
     "Can't believe how friendly everyone is today.",
     "This place has the best energy!",
-    "Loving the new improvements around here."
+    "Loving the new improvements around here.",
+    "NYC is the best city!",
+    "Broadway vibes are amazing!",
+    "Love living in New York!",
+    "Manhattan is so cool!",
+    "Central Park is beautiful today!",
 ]
 
 NEGATIVE_TEMPLATES = [
@@ -151,11 +156,16 @@ NEGATIVE_TEMPLATES = [
     "Need better infrastructure around here.",
     "So tired of the constant honking.",
     "This area needs serious attention.",
-    "Infrastructure is falling apart."
+    "Infrastructure is falling apart.",
+    "NYC traffic is the worst!",
+    "Subway delays are a nightmare.",
+    "Broadway traffic is insane.",
+    "The FDR is always backed up.",
+    "Why is NYC traffic so bad?",
 ]
 
 NEUTRAL_TEMPLATES = [
-    "Just another day in the city.",
+    "Just another day in NYC.",
     "Heading to work as usual.",
     "Traffic is about average today.",
     "Weather is okay, nothing special.",
@@ -164,7 +174,10 @@ NEUTRAL_TEMPLATES = [
     "Same route, same traffic.",
     "Another typical commute.",
     "Business as usual downtown.",
-    "Standard day at the office."
+    "Standard day at the office.",
+    "Another day in the city.",
+    "Typical NYC morning commute.",
+    "Just another day in New York.",
 ]
 
 
@@ -249,7 +262,8 @@ class SyntheticDataGenerator:
     def __init__(self, supabase_url: str, supabase_key: str):
         """Initialize generator with Supabase connection"""
         self.supabase: Client = create_client(supabase_url, supabase_key)
-        self.faker = Faker()
+        # Initialize Faker with US locale for New York City
+        self.faker = Faker('en_US')
         print("✓ Connected to Supabase")
 
     def generate_mood_posts(self, days: int, posts_per_day: int) -> int:

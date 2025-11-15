@@ -2,6 +2,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List, Optional
 from supabase import Client
+from pydantic import BaseModel
 
 from app.api.schemas.admin import (
     EmergencyResponse,
@@ -15,6 +16,18 @@ import logging
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+class ContractorResponse(BaseModel):
+    id: str
+    name: str
+    specialty: str
+    contact: Optional[str] = None
+    rating: Optional[float] = None
+
+
+class AssignContractorRequest(BaseModel):
+    contractor_id: str
 
 
 @router.get("/emergency", response_model=List[EmergencyResponse])
@@ -146,4 +159,62 @@ async def update_work_order(
         raise
     except Exception as e:
         logger.error(f"Error updating work order: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/contractors", response_model=List[ContractorResponse])
+async def get_contractors(
+    specialty: Optional[str] = None,
+    db: Client = Depends(get_db)
+):
+    """Get list of contractors, optionally filtered by specialty."""
+    try:
+        db_service = SupabaseService(db)
+        contractors = await db_service.get_contractors(specialty=specialty)
+        return contractors
+    except Exception as e:
+        logger.error(f"Error fetching contractors: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/work-orders/{work_order_id}/assign", response_model=WorkOrderResponse)
+async def assign_contractor_to_work_order(
+    work_order_id: str,
+    request: AssignContractorRequest,
+    db: Client = Depends(get_db)
+):
+    """Assign a contractor to a work order."""
+    try:
+        db_service = SupabaseService(db)
+        existing = await db_service.get_work_order_by_id(work_order_id)
+        if not existing:
+            raise HTTPException(status_code=404, detail="Work order not found")
+        
+        # Verify contractor exists
+        contractor = await db_service.get_contractor_by_id(request.contractor_id)
+        if not contractor:
+            raise HTTPException(status_code=404, detail="Contractor not found")
+        
+        updated = await db_service.update_work_order(
+            work_order_id, 
+            {"contractor_id": request.contractor_id}
+        )
+        
+        contractor_data = updated.get('contractors') if isinstance(updated, dict) else None
+        formatted = {
+            "id": updated['id'],
+            "issue_id": updated['issue_id'],
+            "contractor_id": updated.get('contractor_id'),
+            "contractor_name": contractor_data.get('name') if contractor_data else None,
+            "contractor_specialty": contractor_data.get('specialty') if contractor_data else None,
+            "material_suggestion": updated.get('material_suggestion'),
+            "status": updated['status'],
+            "created_at": updated['created_at']
+        }
+        logger.info(f"Assigned contractor {request.contractor_id} to work order {work_order_id}")
+        return formatted
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error assigning contractor: {e}")
         raise HTTPException(status_code=500, detail=str(e))

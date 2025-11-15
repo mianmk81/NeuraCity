@@ -2,8 +2,8 @@
 -- Defines 5 fictional city areas with coordinates and initial mood data
 -- These areas serve as geographic zones for mood analysis and data aggregation
 
--- Note: Coordinates are fictional but use realistic lat/lng format
--- Base coordinates roughly centered around a fictional city (40.7N, -74.0W)
+-- Note: Coordinates are for Atlanta, Georgia
+-- Base coordinates: 33.75N, -84.39W (Atlanta, GA)
 
 -- Clear existing data (for re-running seed)
 TRUNCATE TABLE mood_areas CASCADE;
@@ -15,27 +15,27 @@ TRUNCATE TABLE mood_areas CASCADE;
 -- MIDTOWN - Commercial and business district
 -- High activity, mixed sentiment, prone to traffic stress
 INSERT INTO mood_areas (area_id, lat, lng, mood_score, post_count) VALUES
-  ('MIDTOWN', 40.7580, -73.9855, 0.15, 0);
+  ('MIDTOWN', 33.7850, -84.3850, 0.15, 0);
 
 -- DOWNTOWN - Financial and government center
 -- High density, professional atmosphere, moderate stress
 INSERT INTO mood_areas (area_id, lat, lng, mood_score, post_count) VALUES
-  ('DOWNTOWN', 40.7489, -73.9680, 0.05, 0);
+  ('DOWNTOWN', 33.7490, -84.3880, 0.05, 0);
 
--- CAMPUS - University and educational district
+-- CAMPUS - University and educational district (Georgia Tech area)
 -- Younger demographic, generally positive, events-driven mood swings
 INSERT INTO mood_areas (area_id, lat, lng, mood_score, post_count) VALUES
-  ('CAMPUS', 40.7295, -73.9965, 0.45, 0);
+  ('CAMPUS', 33.7750, -84.3960, 0.45, 0);
 
--- PARK_DISTRICT - Green spaces and recreational areas
+-- PARK_DISTRICT - Green spaces and recreational areas (Piedmont Park area)
 -- Generally positive, family-friendly, weather-dependent mood
 INSERT INTO mood_areas (area_id, lat, lng, mood_score, post_count) VALUES
-  ('PARK_DISTRICT', 40.7829, -73.9654, 0.65, 0);
+  ('PARK_DISTRICT', 33.7850, -84.3730, 0.65, 0);
 
 -- RESIDENTIAL_ZONE - Mixed residential neighborhoods
 -- Diverse demographics, community-oriented, moderate sentiment
 INSERT INTO mood_areas (area_id, lat, lng, mood_score, post_count) VALUES
-  ('RESIDENTIAL_ZONE', 40.7189, -73.9842, 0.25, 0);
+  ('RESIDENTIAL_ZONE', 33.7600, -84.3800, 0.25, 0);
 
 -- ============================================================================
 -- Area Metadata Reference
@@ -43,31 +43,31 @@ INSERT INTO mood_areas (area_id, lat, lng, mood_score, post_count) VALUES
 
 -- Area Profiles:
 --
--- MIDTOWN (40.7580, -73.9855)
+-- MIDTOWN (33.7850, -84.3850)
 --   - Characteristics: Commercial hub, high foot traffic, busy intersections
 --   - Base mood: 0.15 (slightly positive)
 --   - Expected issues: Traffic congestion, infrastructure stress
 --   - Peak hours: 8-10 AM, 5-7 PM
 --
--- DOWNTOWN (40.7489, -73.9680)
+-- DOWNTOWN (33.7490, -84.3880)
 --   - Characteristics: Financial district, professional environment
 --   - Base mood: 0.05 (neutral to slightly positive)
 --   - Expected issues: Rush hour traffic, parking problems
 --   - Peak hours: 7-9 AM, 4-6 PM
 --
--- CAMPUS (40.7295, -73.9965)
---   - Characteristics: University area, young demographic
+-- CAMPUS (33.7750, -84.3960)
+--   - Characteristics: University area (Georgia Tech), young demographic
 --   - Base mood: 0.45 (positive)
 --   - Expected issues: Event-based congestion, pedestrian safety
 --   - Peak hours: 9-11 AM, 3-5 PM (class times)
 --
--- PARK_DISTRICT (40.7829, -73.9654)
---   - Characteristics: Green spaces, recreational areas
+-- PARK_DISTRICT (33.7850, -84.3730)
+--   - Characteristics: Green spaces (Piedmont Park), recreational areas
 --   - Base mood: 0.65 (positive)
 --   - Expected issues: Weather-dependent, weekend crowding
 --   - Peak hours: Weekends 10 AM-4 PM
 --
--- RESIDENTIAL_ZONE (40.7189, -73.9842)
+-- RESIDENTIAL_ZONE (33.7600, -84.3800)
 --   - Characteristics: Mixed neighborhoods, community-focused
 --   - Base mood: 0.25 (moderately positive)
 --   - Expected issues: Local traffic, parking, street maintenance
@@ -80,19 +80,19 @@ INSERT INTO mood_areas (area_id, lat, lng, mood_score, post_count) VALUES
 -- These approximate boundaries can be used for area detection:
 --
 -- MIDTOWN:
---   lat: 40.750 to 40.765, lng: -73.995 to -73.975
+--   lat: 33.775 to 33.795, lng: -84.395 to -84.375
 --
 -- DOWNTOWN:
---   lat: 40.740 to 40.755, lng: -73.978 to -73.958
+--   lat: 33.740 to 33.758, lng: -84.398 to -84.378
 --
 -- CAMPUS:
---   lat: 40.720 to 40.738, lng: -74.006 to -73.986
+--   lat: 33.765 to 33.785, lng: -84.406 to -84.386
 --
 -- PARK_DISTRICT:
---   lat: 40.775 to 40.790, lng: -73.975 to -73.955
+--   lat: 33.775 to 33.795, lng: -84.383 to -84.363
 --
 -- RESIDENTIAL_ZONE:
---   lat: 40.710 to 40.728, lng: -73.994 to -73.974
+--   lat: 33.750 to 33.770, lng: -84.390 to -84.370
 
 -- ============================================================================
 -- Verification Query

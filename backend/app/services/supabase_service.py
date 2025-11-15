@@ -97,6 +97,14 @@ class SupabaseService:
             logger.error(f"Error fetching contractors: {e}")
             raise
 
+    async def get_contractor_by_id(self, contractor_id: str):
+        try:
+            response = self.client.table("contractors").select("*").eq("id", contractor_id).execute()
+            return response.data[0] if response.data else None
+        except Exception as e:
+            logger.error(f"Error fetching contractor by ID: {e}")
+            raise
+
     async def create_work_order(self, data: dict):
         try:
             response = self.client.table("work_orders").insert(data).execute()
