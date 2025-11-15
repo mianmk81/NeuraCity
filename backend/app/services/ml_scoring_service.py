@@ -245,6 +245,7 @@ async def determine_action_type_ml(
 ) -> str:
     """
     Use Gemini AI to determine what action should be taken.
+    Automatically marks accidents as emergency.
     
     Args:
         issue_type: Type of issue
@@ -255,6 +256,12 @@ async def determine_action_type_ml(
     Returns:
         str: Action type (emergency, work_order, monitor)
     """
+    # Automatically mark accidents as emergency
+    issue_type_lower = issue_type.lower()
+    if 'accident' in issue_type_lower or 'crash' in issue_type_lower or 'collision' in issue_type_lower:
+        logger.info(f"Accident detected ({issue_type}), automatically setting action_type to emergency")
+        return "emergency"
+    
     if not model:
         return _fallback_action_type(issue_type)
     
@@ -266,13 +273,16 @@ Description: {description or "No description"}
 Severity: {severity} (0-1 scale)
 Urgency: {urgency} (0-1 scale)
 
+IMPORTANT: If this is an accident, crash, or collision, it MUST be classified as "emergency".
+
 Choose ONE action type:
-- "emergency": Requires immediate emergency response (accidents, injuries, immediate danger)
-- "work_order": Requires scheduled repair/maintenance (potholes, broken equipment)
-- "monitor": Track for now, may need future action (minor issues, complaints)
+- "emergency": Requires immediate emergency response (accidents, injuries, immediate danger, life-threatening situations)
+- "work_order": Requires scheduled repair/maintenance (potholes, broken equipment, non-urgent repairs)
+- "monitor": Track for now, may need future action (minor issues, complaints, non-critical)
 
 Consider:
 - Is there immediate danger to life or safety? → emergency
+- Is it an accident or crash? → emergency
 - Does it require physical repair work? → work_order
 - Is it reportable but not actionable yet? → monitor
 
@@ -287,6 +297,10 @@ Respond with ONLY a JSON object:
             result = json.loads(json_match.group())
             action_type = result.get('action_type', 'monitor').lower()
             
+            # Double-check for accidents
+            if 'accident' in issue_type_lower or 'crash' in issue_type_lower:
+                action_type = 'emergency'
+            
             # Validate
             if action_type in ['emergency', 'work_order', 'monitor']:
                 logger.info(f"ML Action: {action_type} - {result.get('reasoning', '')}")
@@ -299,6 +313,9 @@ Respond with ONLY a JSON object:
             
     except Exception as e:
         logger.error(f"Error in ML action type determination: {e}")
+        # Fallback: check if accident
+        if 'accident' in issue_type_lower:
+            return 'emergency'
         return _fallback_action_type(issue_type)
 
 

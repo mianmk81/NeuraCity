@@ -160,6 +160,7 @@ SAFETY: [safety concerns or "None"]
 async def generate_work_order_suggestion(issue: Dict[str, Any]) -> Dict[str, Any]:
     """
     Generate work order suggestions including materials and contractor specialty.
+    Uses contextual questions based on issue type and description.
     
     Args:
         issue: Issue dict with type, description
@@ -175,20 +176,61 @@ async def generate_work_order_suggestion(issue: Dict[str, Any]) -> Dict[str, Any
         }
     
     try:
-        prompt = f"""Generate work order details for the following infrastructure issue:
+        issue_type = issue.get('issue_type', 'unknown').lower()
+        description = issue.get('description', '')
+        
+        # Build contextual questions based on issue type
+        contextual_questions = []
+        
+        if issue_type == 'pothole' or 'pothole' in issue_type:
+            contextual_questions = [
+                "What is the approximate size/diameter of the pothole?",
+                "Is it on a main road or side street?",
+                "Are there any exposed rebar or deep cracks?",
+                "What is the surrounding road condition?"
+            ]
+        elif issue_type == 'traffic_light' or 'traffic_light' in issue_type or 'signal' in issue_type:
+            contextual_questions = [
+                "Is the light completely out or flashing?",
+                "Which direction(s) are affected?",
+                "Is it a single light or multiple lights?",
+                "Are there any visible wiring issues?"
+            ]
+        elif issue_type == 'accident' or 'accident' in issue_type:
+            contextual_questions = [
+                "Are there any injuries?",
+                "Is there vehicle damage blocking traffic?",
+                "Are emergency services already on scene?",
+                "What is the extent of property damage?"
+            ]
+        else:
+            contextual_questions = [
+                "What is the specific nature of the issue?",
+                "What is the extent of the damage?",
+                "Are there any safety concerns?",
+                "What materials or expertise might be needed?"
+            ]
+        
+        # Build enhanced prompt with contextual questions
+        questions_text = "\n".join([f"- {q}" for q in contextual_questions])
+        
+        prompt = f"""You are an infrastructure repair expert. Analyze this issue and provide detailed work order information.
 
-Issue Type: {issue.get('issue_type', 'unknown')}
-Description: {issue.get('description', 'No description')}
+Issue Type: {issue_type}
+Description: {description or 'No additional description provided'}
 
-Provide:
-1. Required materials (comma-separated list with quantities)
-2. Required contractor specialty (one of: pothole_repair, electrical, traffic_signal, general_contractor)
-3. Brief notes for the contractor (1-2 sentences)
+Based on the issue type, consider these questions:
+{questions_text}
 
-Format your response as:
+Please provide:
+1. **MATERIALS NEEDED**: List specific materials with quantities (e.g., "50 lbs cold patch asphalt", "2 traffic signal bulbs", "10 sq ft concrete")
+2. **CONTRACTOR SPECIALTY**: Choose ONE from: pothole_repair, electrical, traffic_signal, general_contractor
+3. **REPAIR NOTES**: Detailed instructions for the contractor (2-3 sentences with specific steps)
+
+Format your response EXACTLY as:
 MATERIALS: [item1, item2, item3]
 SPECIALTY: [specialty]
-NOTES: [notes]"""
+NOTES: [detailed notes]"""
 
         response = model.generate_content(prompt)
         text = response.text.strip()
@@ -197,29 +239,66 @@ NOTES: [notes]"""
         specialty = "general_contractor"
         notes = "See issue details"
         
+        # Enhanced parsing with better error handling
         for line in text.split('\n'):
             line = line.strip()
             if line.startswith('MATERIALS:'):
                 materials_str = line.replace('MATERIALS:', '').strip()
-                materials = [m.strip() for m in materials_str.strip('[]').split(',') if m.strip()]
+                # Handle both [item1, item2] and item1, item2 formats
+                if materials_str.startswith('[') and materials_str.endswith(']'):
+                    materials_str = materials_str[1:-1]
+                materials = [m.strip().strip('"').strip("'") for m in materials_str.split(',') if m.strip()]
                 if not materials:
-                    materials = ["Standard materials"]
+                    materials = [f"Materials for {issue_type} repair"]
             elif line.startswith('SPECIALTY:'):
                 specialty = line.replace('SPECIALTY:', '').strip().lower()
             elif line.startswith('NOTES:'):
                 notes = line.replace('NOTES:', '').strip()
         
+        # Validate specialty
         if specialty not in ['pothole_repair', 'electrical', 'traffic_signal', 'general_contractor']:
-            specialty = 'general_contractor'
+            # Auto-detect based on issue type
+            if 'pothole' in issue_type:
+                specialty = 'pothole_repair'
+            elif 'traffic' in issue_type or 'signal' in issue_type or 'light' in issue_type:
+                specialty = 'traffic_signal'
+            elif 'electrical' in issue_type or 'power' in issue_type:
+                specialty = 'electrical'
+            else:
+                specialty = 'general_contractor'
         
-        logger.info(f"Generated work order suggestion for {issue.get('issue_type')}")
+        # Ensure materials list is not empty
+        if not materials or materials == ["Standard materials"]:
+            if issue_type == 'pothole' or 'pothole' in issue_type:
+                materials = ["Cold patch asphalt (50-100 lbs)", "Road base material", "Compaction equipment"]
+            elif issue_type == 'traffic_light' or 'traffic_light' in issue_type:
+                materials = ["Traffic signal bulbs", "Electrical wiring", "Signal controller components"]
+            else:
+                materials = [f"Materials for {issue_type} repair"]
+        
+        logger.info(f"Generated work order suggestion for {issue_type}: {len(materials)} materials, {specialty} specialty")
         return {"materials": materials, "specialty": specialty, "notes": notes}
     except Exception as e:
-        logger.error(f"Error generating work order: {e}")
+        logger.error(f"Error generating work order: {e}", exc_info=True)
+        # Better fallback based on issue type
+        issue_type = issue.get('issue_type', 'unknown').lower()
+        if 'pothole' in issue_type:
+            materials = ["Cold patch asphalt", "Road base material"]
+            specialty = "pothole_repair"
+        elif 'traffic' in issue_type or 'signal' in issue_type or 'light' in issue_type:
+            materials = ["Traffic signal bulbs", "Electrical components"]
+            specialty = "traffic_signal"
+        elif 'electrical' in issue_type:
+            materials = ["Electrical wiring", "Circuit components"]
+            specialty = "electrical"
+        else:
+            materials = [f"Materials for {issue_type} repair"]
+            specialty = "general_contractor"
+        
         return {
-            "materials": [f"Materials for {issue.get('issue_type')} repair"],
-            "specialty": "general_contractor",
-            "notes": "Error generating suggestions"
+            "materials": materials,
+            "specialty": specialty,
+            "notes": f"Standard repair for {issue_type}. Please review issue details for specific requirements."
         }
 
 
