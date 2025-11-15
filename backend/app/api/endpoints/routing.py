@@ -1,11 +1,12 @@
 """API endpoints for route planning."""
 from fastapi import APIRouter, Depends, HTTPException
 from supabase import Client
+from datetime import datetime
 
 from app.api.schemas.routing import RoutePlanRequest, RouteResponse
 from app.core.dependencies import get_db
 from app.services.supabase_service import SupabaseService
-from app.services.routing_service import plan_route
+from app.services.ml_routing_service import plan_route_ml
 from app.utils.validators import validate_gps_coordinates
 import logging
 
@@ -36,7 +37,8 @@ async def plan_route_endpoint(
         traffic = await db_service.get_traffic_segments()
         noise = await db_service.get_noise_segments()
         
-        route = await plan_route(
+        # Use ML-based routing with context
+        route = await plan_route_ml(
             origin_lat=request.origin_lat,
             origin_lng=request.origin_lng,
             dest_lat=request.destination_lat,
@@ -44,7 +46,9 @@ async def plan_route_endpoint(
             route_type=request.route_type,
             issues=issues,
             traffic=traffic,
-            noise=noise
+            noise=noise,
+            time_of_day=datetime.utcnow(),
+            weather=None  # Could add weather API later
         )
         
         logger.info(f"Planned {request.route_type} route: {route['metrics']['distance_km']}km")

@@ -74,7 +74,12 @@ async def create_issue(
             traffic_congestion=avg_congestion,
             time_of_day=datetime.utcnow()
         )
-        priority = await calculate_priority_ml(severity, urgency)
+        priority = await calculate_priority_ml(
+            severity=severity,
+            urgency=urgency,
+            issue_type=issue_type,
+            description=description
+        )
         action_type = await determine_action_type_ml(
             issue_type=issue_type,
             description=description,

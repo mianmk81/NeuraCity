@@ -166,29 +166,75 @@ Respond with ONLY a JSON object:
         return _fallback_urgency(issue_type, time_of_day)
 
 
-async def calculate_priority_ml(severity: float, urgency: float) -> str:
+async def calculate_priority_ml(
+    severity: float, 
+    urgency: float,
+    issue_type: Optional[str] = None,
+    description: Optional[str] = None,
+    location_context: Optional[str] = None
+) -> str:
     """
-    Use ML to determine priority level (can still use simple logic or ML).
-    For now, using improved logic based on ML scores.
+    Use Gemini AI to intelligently determine priority level.
+    Considers all context, not just numeric thresholds.
     
     Args:
         severity: ML-calculated severity
         urgency: ML-calculated urgency
+        issue_type: Type of issue
+        description: Issue description
+        location_context: Location details
         
     Returns:
         str: Priority level (low, medium, high, critical)
     """
-    # Weight urgency more heavily than severity for prioritization
-    weighted_score = (severity * 0.4) + (urgency * 0.6)
+    if not model:
+        return _fallback_priority(severity, urgency)
     
-    if weighted_score >= 0.85:
-        return "critical"
-    elif weighted_score >= 0.65:
-        return "high"
-    elif weighted_score >= 0.40:
-        return "medium"
-    else:
-        return "low"
+    try:
+        prompt = f"""You are a city operations priority manager. Determine the priority level for this issue.
+
+Severity Score: {severity} (0-1, where 1 is most severe)
+Urgency Score: {urgency} (0-1, where 1 is most urgent)
+Issue Type: {issue_type or "Not specified"}
+Description: {description or "No description"}
+Location: {location_context or "Standard location"}
+
+Classify into ONE priority level:
+- "low": Minor issues, can wait weeks/months
+- "medium": Moderate issues, address within days
+- "high": Significant issues, needs attention within hours
+- "critical": Severe/urgent, requires immediate response
+
+Consider:
+- Public safety impact
+- Potential for situation to worsen
+- Number of people affected
+- Time sensitivity
+- Infrastructure criticality
+
+Respond with ONLY a JSON object:
+{{"priority": "high", "reasoning": "Brief explanation"}}"""
+
+        response = model.generate_content(prompt)
+        text = response.text.strip()
+        
+        json_match = re.search(r'\{[^}]+\}', text)
+        if json_match:
+            result = json.loads(json_match.group())
+            priority = result.get('priority', 'medium').lower()
+            
+            if priority in ['low', 'medium', 'high', 'critical']:
+                logger.info(f"ML Priority: {priority} - {result.get('reasoning', '')}")
+                return priority
+            else:
+                logger.warning(f"Invalid priority from ML: {priority}, using fallback")
+                return _fallback_priority(severity, urgency)
+        else:
+            return _fallback_priority(severity, urgency)
+            
+    except Exception as e:
+        logger.error(f"Error in ML priority calculation: {e}")
+        return _fallback_priority(severity, urgency)
 
 
 async def determine_action_type_ml(
@@ -295,5 +341,19 @@ def _fallback_action_type(issue_type: str) -> str:
         "other": "monitor"
     }
     return action_map.get(issue_type, "monitor")
+
+
+def _fallback_priority(severity: float, urgency: float) -> str:
+    """Fallback to threshold-based priority if ML fails."""
+    weighted_score = (severity * 0.4) + (urgency * 0.6)
+    
+    if weighted_score >= 0.85:
+        return "critical"
+    elif weighted_score >= 0.65:
+        return "high"
+    elif weighted_score >= 0.40:
+        return "medium"
+    else:
+        return "low"
 
 
