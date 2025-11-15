@@ -10,7 +10,8 @@ import {
   ArrowRight,
   Zap,
   Brain,
-  Navigation
+  Navigation,
+  BarChart3
 } from 'lucide-react';
 
 const Home = () => {
@@ -38,6 +39,14 @@ const Home = () => {
       link: '/mood',
       gradient: 'from-green-500 to-emerald-500',
       bgGradient: 'from-green-50 to-emerald-50',
+    },
+    {
+      icon: BarChart3,
+      title: 'Analytics',
+      description: 'Comprehensive city analytics: mood trends, accidents, and construction hotspots',
+      link: '/analytics',
+      gradient: 'from-cyan-500 to-blue-500',
+      bgGradient: 'from-cyan-50 to-blue-50',
     },
     {
       icon: Shield,

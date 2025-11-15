@@ -5,6 +5,7 @@ import ReportIssue from './pages/ReportIssue'
 import PlanRoute from './pages/PlanRoute'
 import MoodMap from './pages/MoodMap'
 import Admin from './pages/Admin'
+import Analytics from './pages/Analytics'
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/report" element={<ReportIssue />} />
           <Route path="/route" element={<PlanRoute />} />
           <Route path="/mood" element={<MoodMap />} />
+          <Route path="/analytics" element={<Analytics />} />
           <Route path="/admin" element={<Admin />} />
         </Routes>
       </div>
