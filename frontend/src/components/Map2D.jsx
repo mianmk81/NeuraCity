@@ -25,6 +25,7 @@ const Map2D = ({
 }) => {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
+  const onMapClickRef = useRef(onMapClick);
   const layersRef = useRef({
     issues: L.layerGroup(),
     mood: L.layerGroup(),
@@ -33,6 +34,11 @@ const Map2D = ({
     route: L.layerGroup(),
     markers: L.layerGroup(),
   });
+
+  // Update the ref whenever onMapClick changes
+  useEffect(() => {
+    onMapClickRef.current = onMapClick;
+  }, [onMapClick]);
 
   // Initialize map
   useEffect(() => {
@@ -50,12 +56,12 @@ const Map2D = ({
       layer.addTo(mapInstanceRef.current);
     });
 
-    // Handle map clicks
-    if (onMapClick) {
-      mapInstanceRef.current.on('click', (e) => {
-        onMapClick({ lat: e.latlng.lat, lng: e.latlng.lng });
-      });
-    }
+    // Handle map clicks using ref to avoid stale closures
+    mapInstanceRef.current.on('click', (e) => {
+      if (onMapClickRef.current) {
+        onMapClickRef.current({ lat: e.latlng.lat, lng: e.latlng.lng });
+      }
+    });
 
     return () => {
       if (mapInstanceRef.current) {
@@ -78,24 +84,37 @@ const Map2D = ({
     layer.clearLayers();
 
     issues.forEach((issue) => {
+      const isAccident = issue.issue_type && (
+        issue.issue_type.toLowerCase().includes('accident') ||
+        issue.issue_type.toLowerCase().includes('crash') ||
+        issue.issue_type.toLowerCase().includes('collision')
+      );
+      
       const color = getPriorityColor(issue.priority);
+      const size = isAccident ? 32 : 24; // Larger marker for accidents
       const icon = L.divIcon({
         className: 'custom-marker',
-        html: `<div style="background-color: ${color}; width: 24px; height: 24px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
+        html: `<div style="background-color: ${color}; width: ${size}px; height: ${size}px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.5); ${isAccident ? 'animation: pulse 2s infinite;' : ''}">
+          ${isAccident ? '<span style="color: white; font-size: 16px; display: flex; align-items: center; justify-content: center; height: 100%;">🚨</span>' : ''}
+        </div>`,
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size / 2],
       });
 
       const marker = L.marker([issue.lat, issue.lng], { icon });
 
       marker.bindPopup(`
         <div style="min-width: 200px;">
-          <h3 style="font-weight: bold; margin-bottom: 8px;">${issue.issue_type}</h3>
+          <h3 style="font-weight: bold; margin-bottom: 8px; color: ${isAccident ? '#dc2626' : '#333'};">
+            ${isAccident ? '🚨 ' : ''}${issue.issue_type || 'Issue'}
+          </h3>
           ${issue.description ? `<p style="margin-bottom: 8px;">${issue.description}</p>` : ''}
           <p style="font-size: 12px; color: #666;">
-            <strong>Priority:</strong> ${issue.priority || 'N/A'}<br>
+            <strong>Priority:</strong> <span style="color: ${color};">${issue.priority || 'N/A'}</span><br>
             <strong>Severity:</strong> ${issue.severity?.toFixed(2) || 'N/A'}<br>
-            <strong>Status:</strong> ${issue.status || 'open'}
+            <strong>Status:</strong> ${issue.status || 'open'}<br>
+            ${isAccident ? '<strong style="color: #dc2626;">⚠️ URGENT - ACCIDENT</strong><br>' : ''}
+            <strong>Reported:</strong> ${issue.created_at ? new Date(issue.created_at).toLocaleString() : 'N/A'}
           </p>
         </div>
       `);

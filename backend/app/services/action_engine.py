@@ -65,7 +65,12 @@ async def create_work_order_entry(db_service: SupabaseService, issue_id: str, is
         image_url = issue_data.get('image_url')
         if image_url:
             # Convert relative URL to absolute path
-            image_path = image_url if os.path.isabs(image_url) else os.path.join(settings.UPLOAD_DIR, os.path.basename(image_url))
+            if os.path.isabs(image_url):
+                image_path = image_url
+            else:
+                # Extract filename and construct absolute path
+                filename = os.path.basename(image_url)
+                image_path = os.path.abspath(os.path.join(settings.UPLOAD_DIR, filename))
             if os.path.exists(image_path):
                 logger.info(f"Analyzing image with Gemini Vision: {image_path}")
                 suggestions = await analyze_issue_image(

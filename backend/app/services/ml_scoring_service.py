@@ -23,6 +23,33 @@ except Exception as e:
     model = None
 
 
+def _extract_json_from_text(text: str) -> Optional[Dict[str, Any]]:
+    """
+    Safely extract and parse JSON from AI response text.
+    Handles nested objects and provides robust error handling.
+
+    Args:
+        text: Response text that may contain JSON
+
+    Returns:
+        Parsed JSON dict or None if parsing fails
+    """
+    try:
+        # Try to find JSON object using improved regex that handles nesting
+        # Use DOTALL flag to match across newlines
+        json_match = re.search(r'\{(?:[^{}]|(?:\{[^{}]*\}))*\}', text, re.DOTALL)
+        if json_match:
+            json_str = json_match.group()
+            return json.loads(json_str)
+        return None
+    except json.JSONDecodeError as e:
+        logger.warning(f"Failed to parse JSON from AI response: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"Unexpected error extracting JSON: {e}")
+        return None
+
+
 async def calculate_severity_ml(
     issue_type: str,
     description: Optional[str] = None,
@@ -71,11 +98,10 @@ Respond with ONLY a JSON object in this format:
 
         response = model.generate_content(prompt)
         text = response.text.strip()
-        
+
         # Extract JSON from response
-        json_match = re.search(r'\{[^}]+\}', text)
-        if json_match:
-            result = json.loads(json_match.group())
+        result = _extract_json_from_text(text)
+        if result and 'severity' in result:
             severity = float(result.get('severity', 0.5))
             severity = max(0.0, min(1.0, severity))  # Clamp between 0 and 1
             logger.info(f"ML Severity: {severity} - {result.get('reasoning', '')}")
@@ -149,10 +175,9 @@ Respond with ONLY a JSON object:
 
         response = model.generate_content(prompt)
         text = response.text.strip()
-        
-        json_match = re.search(r'\{[^}]+\}', text)
-        if json_match:
-            result = json.loads(json_match.group())
+
+        result = _extract_json_from_text(text)
+        if result and 'urgency' in result:
             urgency = float(result.get('urgency', 0.5))
             urgency = max(0.0, min(1.0, urgency))
             logger.info(f"ML Urgency: {urgency} - {result.get('reasoning', '')}")
@@ -217,12 +242,11 @@ Respond with ONLY a JSON object:
 
         response = model.generate_content(prompt)
         text = response.text.strip()
-        
-        json_match = re.search(r'\{[^}]+\}', text)
-        if json_match:
-            result = json.loads(json_match.group())
+
+        result = _extract_json_from_text(text)
+        if result and 'priority' in result:
             priority = result.get('priority', 'medium').lower()
-            
+
             if priority in ['low', 'medium', 'high', 'critical']:
                 logger.info(f"ML Priority: {priority} - {result.get('reasoning', '')}")
                 return priority
@@ -291,16 +315,15 @@ Respond with ONLY a JSON object:
 
         response = model.generate_content(prompt)
         text = response.text.strip()
-        
-        json_match = re.search(r'\{[^}]+\}', text)
-        if json_match:
-            result = json.loads(json_match.group())
+
+        result = _extract_json_from_text(text)
+        if result and 'action_type' in result:
             action_type = result.get('action_type', 'monitor').lower()
-            
+
             # Double-check for accidents
             if 'accident' in issue_type_lower or 'crash' in issue_type_lower:
                 action_type = 'emergency'
-            
+
             # Validate
             if action_type in ['emergency', 'work_order', 'monitor']:
                 logger.info(f"ML Action: {action_type} - {result.get('reasoning', '')}")

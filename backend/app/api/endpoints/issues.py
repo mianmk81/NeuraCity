@@ -101,12 +101,20 @@ async def create_issue(
         }
         
         created_issue = await db_service.create_issue(issue_data)
-        
+
+        # Process with action engine (emergency queue or work order creation)
+        action_engine_failed = False
         try:
             await process_new_issue(created_issue['id'], created_issue)
         except Exception as e:
-            logger.error(f"Error in action engine: {e}")
-        
+            action_engine_failed = True
+            logger.error(f"Error in action engine for issue {created_issue['id']}: {e}", exc_info=True)
+            # Note: Issue is created successfully, but automated action (work order/emergency) failed
+            # This could be retried manually by admin
+
+        if action_engine_failed and action_type in ['emergency', 'work_order']:
+            logger.warning(f"Issue {created_issue['id']} created but action engine failed for action_type={action_type}")
+
         logger.info(f"Created issue {created_issue['id']} with priority {priority}")
         return created_issue
     

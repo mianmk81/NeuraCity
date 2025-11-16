@@ -26,12 +26,10 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     """Application lifespan manager."""
     logger.info("Starting NeuraCity API...")
-    
-    os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
     logger.info(f"Upload directory ready: {settings.UPLOAD_DIR}")
-    
+
     yield
-    
+
     logger.info("Shutting down NeuraCity API...")
 
 

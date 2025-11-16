@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import Map2D from '../components/Map2D';
 import MoodLegend from '../components/MoodLegend';
-import { getMoodData } from '../lib/api';
+import { getMoodData, getIssues } from '../lib/api';
 import { Loader2, RefreshCw } from 'lucide-react';
 
 const MoodMap = () => {
   const [moodAreas, setMoodAreas] = useState([]);
+  const [issues, setIssues] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -14,8 +15,12 @@ const MoodMap = () => {
     setError(null);
 
     try {
-      const data = await getMoodData();
-      setMoodAreas(data);
+      const [moodData, issuesData] = await Promise.all([
+        getMoodData(),
+        getIssues({ limit: 1000 })
+      ]);
+      setMoodAreas(moodData);
+      setIssues(issuesData || []);
     } catch (err) {
       setError(err.message || 'Failed to load mood data');
     } finally {
@@ -25,6 +30,9 @@ const MoodMap = () => {
 
   useEffect(() => {
     fetchMoodData();
+    // Refresh data every 30 seconds to show new reports
+    const interval = setInterval(fetchMoodData, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -163,6 +171,7 @@ const MoodMap = () => {
                   <Map2D
                     height="100%"
                     moodAreas={moodAreas}
+                    issues={issues}
                     center={[33.7490, -84.3880]} // Atlanta, Georgia
                     zoom={13}
                   />

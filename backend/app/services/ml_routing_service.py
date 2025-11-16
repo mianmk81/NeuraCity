@@ -85,7 +85,7 @@ async def plan_route_ml(
     # Generate realistic waypoints along the route
     path = await generate_path_ml(
         origin_lat, origin_lng, dest_lat, dest_lng,
-        route_type, issues, traffic, noise
+        route_type, issues
     )
     
     # Get ML-predicted metrics
@@ -111,129 +111,95 @@ async def generate_path_ml(
     dest_lat: float,
     dest_lng: float,
     route_type: str,
-    issues: List[Dict],
-    traffic: List[Dict] = None,
-    noise: List[Dict] = None
+    issues: List[Dict]
 ) -> List[Dict[str, float]]:
     """
-    Generate realistic waypoints that follow actual streets and avoid:
-    - High-severity issues (MANDATORY - always avoid red areas)
-    - High congestion areas (eco/drive routes)
-    - High noise areas (quiet_walk routes)
-    
-    Uses OpenRouteService with waypoints to route around red areas while staying on streets.
+    Generate realistic waypoints that follow actual streets and avoid high-severity issues.
+    Uses OpenRouteService for real street-based routing, then adjusts to avoid issues.
     
     Returns:
         List of {lat, lng} waypoints
     """
-    traffic = traffic or []
-    noise = noise or []
+    # Filter issues to avoid based on route type and severity
+    # For drive routes: avoid accidents (critical priority) and high severity (> 0.6)
+    # For eco routes: avoid high severity issues (> 0.7)
+    # For quiet_walk: avoid medium-high severity (> 0.5)
+
+    issues_to_avoid = []
+
+    for issue in issues:
+        if 'lat' not in issue or 'lng' not in issue:
+            continue
+
+        severity = issue.get('severity', 0)
+        priority = issue.get('priority', '').lower()
+        issue_type = issue.get('issue_type', '').lower()
+
+        # ALWAYS avoid accidents regardless of route type (safety first)
+        is_accident = 'accident' in issue_type or 'crash' in issue_type or priority == 'critical'
+
+        should_avoid = False
+
+        if is_accident:
+            # Accidents are ALWAYS avoided on all route types
+            should_avoid = True
+        elif route_type == 'drive':
+            # Drive routes avoid high and medium-high severity (red and orange zones)
+            should_avoid = severity > 0.6 or priority in ['high', 'critical']
+        elif route_type == 'eco':
+            # Eco routes avoid high severity areas
+            should_avoid = severity > 0.7 or priority == 'critical'
+        elif route_type == 'quiet_walk':
+            # Quiet walk routes avoid medium-high severity
+            should_avoid = severity > 0.5 or priority in ['high', 'critical']
+
+        if should_avoid:
+            issues_to_avoid.append(issue)
+
+    logger.info(f"Route type '{route_type}': Avoiding {len(issues_to_avoid)} issues out of {len(issues)} total")
     
-    # Filter high-severity issues (red areas - MANDATORY to avoid)
-    high_severity_issues = [
-        i for i in issues 
-        if i.get('severity', 0) > 0.7 and 
-        'lat' in i and 'lng' in i
-    ]
-    logger.info(f"Found {len(high_severity_issues)} high-severity (red) areas - MANDATORY to avoid")
-    
-    # Filter high congestion areas for eco/drive routes (congestion > 0.7)
-    high_congestion_areas = []
-    if route_type in ['drive', 'eco']:
-        high_congestion_areas = [
-            t for t in traffic
-            if t.get('congestion', 0) > 0.7 and
-            t.get('lat') is not None and t.get('lng') is not None
-        ]
-        logger.info(f"Found {len(high_congestion_areas)} high congestion areas to avoid")
-    
-    # Filter high noise areas for quiet_walk routes (noise_db > 65)
-    high_noise_areas = []
-    if route_type == 'quiet_walk':
-        high_noise_areas = [
-            n for n in noise
-            if n.get('noise_db', 0) > 65 and
-            n.get('lat') is not None and n.get('lng') is not None
-        ]
-        logger.info(f"Found {len(high_noise_areas)} high noise areas to avoid")
-    
-    # Calculate waypoints to avoid red areas (high-severity issues)
-    # These are mandatory - we must route around them
-    avoidance_waypoints = _calculate_avoidance_waypoints(
-        origin_lat, origin_lng, dest_lat, dest_lng, high_severity_issues
+    # First, try to get real street route from OpenRouteService
+    street_path = await _get_street_route_ors(
+        origin_lat, origin_lng, dest_lat, dest_lng, route_type
     )
-    
-    # Build coordinate list for routing: origin -> avoidance waypoints -> destination
-    coordinates = [[origin_lng, origin_lat]]
-    if avoidance_waypoints:
-        for wp in avoidance_waypoints:
-            coordinates.append([wp['lng'], wp['lat']])
-        logger.info(f"Added {len(avoidance_waypoints)} waypoints to avoid {len(high_severity_issues)} red areas")
-    coordinates.append([dest_lng, dest_lat])
-    
-    # Get route with waypoints from OpenRouteService
-    street_path = await _get_street_route_with_waypoints(
-        coordinates, route_type, high_severity_issues
-    )
-    
+
     if street_path and len(street_path) >= 2:
-        # Verify the route avoids red areas
-        verified_path = _verify_route_avoids_red_areas(street_path, high_severity_issues)
-        logger.info(f"Using street route with {len(verified_path)} waypoints, avoiding {len(high_severity_issues)} red areas")
-        return verified_path
-    
-    # If OpenRouteService fails, try with congestion/noise areas too
-    all_areas_to_avoid = high_severity_issues.copy()
-    all_areas_to_avoid.extend(high_congestion_areas)
-    all_areas_to_avoid.extend(high_noise_areas)
-    
-    # Fallback: Use smart path generation that avoids problem areas
-    logger.warning("OpenRouteService unavailable, using smart path generation with mandatory red area avoidance")
-    path = _generate_smart_path(
-        origin_lat, origin_lng, dest_lat, dest_lng,
-        all_areas_to_avoid, route_type
-    )
-    
-    # Fallback: Use smart path generation that avoids problem areas
+        # We have a real street route, now adjust it to avoid issues
+        adjusted_path = _adjust_path_around_issues(street_path, issues_to_avoid, route_type)
+        logger.info(f"Using OpenRouteService street route with {len(adjusted_path)} waypoints")
+        return adjusted_path
+
+    # Fallback: Use smart path generation that avoids issues
     logger.warning("OpenRouteService unavailable, using smart path generation")
     path = _generate_smart_path(
         origin_lat, origin_lng, dest_lat, dest_lng,
-        areas_to_avoid, route_type
+        issues_to_avoid, route_type
     )
     
     # Try ML enhancement if model is available
     if model:
         try:
-            # Build avoidance context for ML
-            avoidance_context = ""
-            if areas_to_avoid:
-                avoid_list = [
-                    f"({a['lat']:.4f}, {a['lng']:.4f})" 
-                    for a in areas_to_avoid[:8]  # Limit to 8 for prompt size
+            # Build issue context for ML
+            issue_context = ""
+            if issues_to_avoid:
+                issue_list = [
+                    f"({i['lat']:.4f}, {i['lng']:.4f})"
+                    for i in issues_to_avoid[:5]  # Limit to 5 for prompt size
                 ]
-                avoidance_types = []
-                if high_severity_issues:
-                    avoidance_types.append(f"{len(high_severity_issues)} high-severity issues")
-                if high_congestion_areas:
-                    avoidance_types.append(f"{len(high_congestion_areas)} high congestion areas")
-                if high_noise_areas:
-                    avoidance_types.append(f"{len(high_noise_areas)} high noise areas")
-                
-                avoidance_context = f"\nAvoid these problem locations ({', '.join(avoidance_types)}): {', '.join(avoid_list)}"
+                issue_context = f"\nAVOID these issue locations: {', '.join(issue_list)}"
             
             prompt = f"""You are a navigation system. Refine this route to follow realistic street patterns.
 
 Origin: ({origin_lat:.6f}, {origin_lng:.6f})
 Destination: ({dest_lat:.6f}, {dest_lng:.6f})
 Route Type: {route_type}
-Current Waypoints: {len(path)} points{avoidance_context}
+Current Waypoints: {len(path)} points{issue_context}
 
 Refine the route to:
 1. Follow realistic road patterns (not straight lines)
 2. Create smooth curves and turns
-3. AVOID ALL the problem locations listed above (critical!)
-4. For {route_type}: {"minimize noise exposure" if route_type == "quiet_walk" else "minimize congestion" if route_type in ["drive", "eco"] else ""}
-5. Add 2-4 intermediate waypoints for realistic navigation
+3. Avoid the issue locations listed above
+4. Add 2-4 intermediate waypoints for realistic navigation
 
 Respond with ONLY a JSON object:
 {{"waypoints": [{{"lat": 40.7128, "lng": -74.0060}}, {{"lat": 40.7150, "lng": -74.0050}}, ...]}}"""
@@ -371,119 +337,24 @@ Respond with ONLY this JSON format:
         return _fallback_metrics(distance_km, route_type, issues, traffic, noise)
 
 
-def _calculate_avoidance_waypoints(
+async def _get_street_route_ors(
     origin_lat: float,
     origin_lng: float,
     dest_lat: float,
     dest_lng: float,
-    red_areas: List[Dict]
-) -> List[Dict[str, float]]:
-    """
-    Calculate waypoints to route around red (high-severity) areas.
-    Uses the same lat/lng distance approach - routes around red areas by going
-    the same distance in latitude/longitude away from them.
-    
-    Returns list of waypoint coordinates that avoid red areas.
-    """
-    if not red_areas:
-        return []
-    
-    waypoints = []
-    total_distance = haversine_distance(origin_lat, origin_lng, dest_lat, dest_lng)
-    
-    # Check if direct route passes through any red areas
-    for red_area in red_areas:
-        red_lat = red_area.get('lat', 0)
-        red_lng = red_area.get('lng', 0)
-        
-        # Calculate distance from red area to the direct route line
-        # Using point-to-line distance calculation
-        origin_to_red = haversine_distance(origin_lat, origin_lng, red_lat, red_lng)
-        dest_to_red = haversine_distance(dest_lat, dest_lng, red_lat, red_lng)
-        origin_to_dest = total_distance
-        
-        # If red area is close to the route (< 500m), add a waypoint to avoid it
-        # Calculate perpendicular distance from red area to route line
-        if origin_to_dest > 0:
-            # Use cross product to find distance from point to line
-            # Simplified: if red area is within 500m of route, add avoidance waypoint
-            min_dist_to_route = min(origin_to_red, dest_to_red)
-            
-            # Check if red area is between origin and destination
-            # Calculate if red area projects onto the route segment
-            route_dlat = dest_lat - origin_lat
-            route_dlng = dest_lng - origin_lng
-            
-            # Vector from origin to red area
-            red_dlat = red_lat - origin_lat
-            red_dlng = red_lng - origin_lng
-            
-            # Project red area onto route vector
-            route_length_sq = route_dlat**2 + route_dlng**2
-            if route_length_sq > 0:
-                t = (red_dlat * route_dlat + red_dlng * route_dlng) / route_length_sq
-                
-                # If projection is on the route segment (0 < t < 1) and close (< 500m)
-                if 0 < t < 1:
-                    # Projected point on route
-                    proj_lat = origin_lat + t * route_dlat
-                    proj_lng = origin_lng + t * route_dlng
-                    dist_to_route = haversine_distance(red_lat, red_lng, proj_lat, proj_lng)
-                    
-                    if dist_to_route < 0.5:  # Within 500m of route
-                        # Calculate waypoint that avoids red area
-                        # Go the same lat/lng distance away from red area
-                        avoid_dlat = red_lat - proj_lat
-                        avoid_dlng = red_lng - proj_lng
-                        avoid_dist = math.sqrt(avoid_dlat**2 + avoid_dlng**2)
-                        
-                        if avoid_dist > 0:
-                            # Push waypoint away from red area by same distance
-                            # Use 300m avoidance radius
-                            push_distance = 0.3  # 300 meters
-                            push_factor = (push_distance / avoid_dist) if avoid_dist < push_distance else 1.0
-                            
-                            avoid_lat = proj_lat - (avoid_dlat / avoid_dist) * push_distance
-                            avoid_lng = proj_lng - (avoid_dlng / avoid_dist) * push_distance
-                            
-                            waypoints.append({
-                                "lat": round(avoid_lat, 6),
-                                "lng": round(avoid_lng, 6)
-                            })
-                            logger.info(f"Added avoidance waypoint at ({avoid_lat:.6f}, {avoid_lng:.6f}) to avoid red area at ({red_lat:.6f}, {red_lng:.6f})")
-    
-    # Remove duplicate waypoints (if multiple red areas create similar waypoints)
-    unique_waypoints = []
-    for wp in waypoints:
-        is_duplicate = False
-        for existing in unique_waypoints:
-            if haversine_distance(wp['lat'], wp['lng'], existing['lat'], existing['lng']) < 0.2:
-                is_duplicate = True
-                break
-        if not is_duplicate:
-            unique_waypoints.append(wp)
-    
-    return unique_waypoints
-
-
-async def _get_street_route_with_waypoints(
-    coordinates: List[List[float]],
-    route_type: str,
-    red_areas: List[Dict] = None
+    route_type: str
 ) -> Optional[List[Dict[str, float]]]:
     """
-    Get real street-based route from OpenRouteService or OSRM with waypoints.
-    Coordinates should be in [lng, lat] format as required by the APIs.
+    Get real street-based route from OpenRouteService or OSRM.
+    Returns list of waypoints following actual roads.
     """
-    red_areas = red_areas or []
-    
     # Try OpenRouteService first (if API key is available)
     if settings.OPENROUTESERVICE_API_KEY:
         try:
             # Map route types to OpenRouteService profiles
             profile_map = {
                 "drive": "driving-car",
-                "eco": "driving-eco",
+                "eco": "driving-eco",  # More fuel-efficient route
                 "quiet_walk": "foot-walking"
             }
             profile = profile_map.get(route_type, "driving-car")
@@ -491,15 +362,15 @@ async def _get_street_route_with_waypoints(
             # OpenRouteService API endpoint
             url = f"https://api.openrouteservice.org/v2/directions/{profile}"
             
-            # Request body with waypoints
+            # Request body
             body = {
-                "coordinates": coordinates,
+                "coordinates": [[origin_lng, origin_lat], [dest_lng, dest_lat]],
                 "geometry": True,
                 "format": "geojson"
             }
             
             # Make request with timeout
-            async with httpx.AsyncClient(timeout=15.0) as client:
+            async with httpx.AsyncClient(timeout=10.0) as client:
                 response = await client.post(
                     url,
                     json=body,
@@ -515,20 +386,20 @@ async def _get_street_route_with_waypoints(
                     # Extract coordinates from GeoJSON
                     if "features" in data and len(data["features"]) > 0:
                         geometry = data["features"][0].get("geometry", {})
-                        route_coordinates = geometry.get("coordinates", [])
+                        coordinates = geometry.get("coordinates", [])
                         
                         # Convert from [lng, lat] to [lat, lng] format
                         waypoints = [
                             {"lat": coord[1], "lng": coord[0]}
-                            for coord in route_coordinates
+                            for coord in coordinates
                         ]
                         
                         # Ensure start and end are exact
                         if waypoints:
-                            waypoints[0] = {"lat": coordinates[0][1], "lng": coordinates[0][0]}
-                            waypoints[-1] = {"lat": coordinates[-1][1], "lng": coordinates[-1][0]}
+                            waypoints[0] = {"lat": origin_lat, "lng": origin_lng}
+                            waypoints[-1] = {"lat": dest_lat, "lng": dest_lng}
                         
-                        logger.info(f"OpenRouteService returned {len(waypoints)} waypoints with avoidance routing")
+                        logger.info(f"OpenRouteService returned {len(waypoints)} waypoints")
                         return waypoints
                 else:
                     logger.warning(f"OpenRouteService returned status {response.status_code}")
@@ -540,22 +411,20 @@ async def _get_street_route_with_waypoints(
         # Map route types to OSRM profiles
         profile_map = {
             "drive": "driving",
-            "eco": "driving",
+            "eco": "driving",  # OSRM doesn't have eco, use driving
             "quiet_walk": "walking"
         }
         profile = profile_map.get(route_type, "driving")
         
-        # OSRM API endpoint with waypoints
-        # Format: /route/v1/{profile}/{lon1},{lat1};{lon2},{lat2};...
-        coord_string = ";".join([f"{coord[0]},{coord[1]}" for coord in coordinates])
-        url = f"{settings.OSRM_SERVER_URL}/route/v1/{profile}/{coord_string}"
+        # OSRM API endpoint (public instance)
+        url = f"{settings.OSRM_SERVER_URL}/route/v1/{profile}/{origin_lng},{origin_lat};{dest_lng},{dest_lat}"
         params = {
             "overview": "full",
             "geometries": "geojson",
             "steps": "false"
         }
         
-        async with httpx.AsyncClient(timeout=15.0) as client:
+        async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(url, params=params)
             
             if response.status_code == 200:
@@ -564,20 +433,20 @@ async def _get_street_route_with_waypoints(
                 # Extract coordinates from OSRM response
                 if "routes" in data and len(data["routes"]) > 0:
                     geometry = data["routes"][0].get("geometry", {})
-                    route_coordinates = geometry.get("coordinates", [])
+                    coordinates = geometry.get("coordinates", [])
                     
                     # Convert from [lng, lat] to [lat, lng] format
                     waypoints = [
                         {"lat": coord[1], "lng": coord[0]}
-                        for coord in route_coordinates
+                        for coord in coordinates
                     ]
                     
                     # Ensure start and end are exact
                     if waypoints:
-                        waypoints[0] = {"lat": coordinates[0][1], "lng": coordinates[0][0]}
-                        waypoints[-1] = {"lat": coordinates[-1][1], "lng": coordinates[-1][0]}
+                        waypoints[0] = {"lat": origin_lat, "lng": origin_lng}
+                        waypoints[-1] = {"lat": dest_lat, "lng": dest_lng}
                     
-                    logger.info(f"OSRM returned {len(waypoints)} waypoints with avoidance routing")
+                    logger.info(f"OSRM returned {len(waypoints)} waypoints")
                     return waypoints
             else:
                 logger.warning(f"OSRM returned status {response.status_code}")
@@ -589,111 +458,89 @@ async def _get_street_route_with_waypoints(
     return None
 
 
-def _verify_route_avoids_red_areas(
-    path: List[Dict[str, float]],
-    red_areas: List[Dict]
-) -> List[Dict[str, float]]:
-    """
-    Verify that the route avoids red areas. If it passes too close, log a warning.
-    Returns the path (we trust OpenRouteService to route around waypoints).
-    """
-    if not red_areas:
-        return path
-    
-    min_distance_to_red = float('inf')
-    closest_red = None
-    
-    for waypoint in path:
-        for red_area in red_areas:
-            red_lat = red_area.get('lat', 0)
-            red_lng = red_area.get('lng', 0)
-            dist = haversine_distance(waypoint['lat'], waypoint['lng'], red_lat, red_lng)
-            
-            if dist < min_distance_to_red:
-                min_distance_to_red = dist
-                closest_red = red_area
-    
-    if min_distance_to_red < 0.2:  # Within 200m of a red area
-        logger.warning(f"Route passes within {min_distance_to_red*1000:.0f}m of red area at ({closest_red.get('lat', 0):.6f}, {closest_red.get('lng', 0):.6f})")
-    else:
-        logger.info(f"Route successfully avoids all red areas (minimum distance: {min_distance_to_red*1000:.0f}m)")
-    
-    return path
-
-
-async def _get_street_route_ors(
-    origin_lat: float,
-    origin_lng: float,
-    dest_lat: float,
-    dest_lng: float,
-    route_type: str,
-    areas_to_avoid: List[Dict] = None
-) -> Optional[List[Dict[str, float]]]:
-    """
-    Legacy function - kept for backward compatibility.
-    Use _get_street_route_with_waypoints instead for waypoint-based routing.
-    """
-    coordinates = [[origin_lng, origin_lat], [dest_lng, dest_lat]]
-    return await _get_street_route_with_waypoints(coordinates, route_type, areas_to_avoid)
-
-
 def _adjust_path_around_issues(
     path: List[Dict[str, float]],
-    areas_to_avoid: List[Dict],
-    route_type: str = 'drive'
+    issues_to_avoid: List[Dict],
+    route_type: str
 ) -> List[Dict[str, float]]:
     """
-    Conservatively adjust a street route to avoid problem areas.
-    Only adjusts when route passes VERY close to problem areas (< 100m).
-    Keeps adjustments minimal to preserve street alignment.
-    
-    For routes from OpenRouteService/OSRM, we prefer to keep the original route
-    and only make tiny adjustments when absolutely necessary.
+    Adjust a street route to avoid issues.
+    Modifies waypoints near issues while keeping the route on streets.
+    Avoidance strength depends on route type and issue severity.
     """
-    if not areas_to_avoid:
+    if not issues_to_avoid:
         return path
+
+    # Set avoidance radius based on route type (in km)
+    avoidance_radius = {
+        'drive': 0.5,        # 500m - drive routes need more safety distance
+        'eco': 0.3,          # 300m - eco routes can get closer
+        'quiet_walk': 0.25   # 250m - walking routes can navigate tighter
+    }.get(route_type, 0.3)
+
+    adjusted_path = []
+
+    for i, waypoint in enumerate(path):
+        lat = waypoint["lat"]
+        lng = waypoint["lng"]
+
+        # Check distance to all issues to avoid
+        min_dist_to_issue = float('inf')
+        closest_issue = None
+
+        for issue in issues_to_avoid:
+            issue_lat = issue.get('lat', 0)
+            issue_lng = issue.get('lng', 0)
+            dist = haversine_distance(lat, lng, issue_lat, issue_lng)
+
+            if dist < min_dist_to_issue:
+                min_dist_to_issue = dist
+                closest_issue = issue
+
+        # If within avoidance radius, push waypoint away from issue
+        if min_dist_to_issue < avoidance_radius and closest_issue:
+            issue_lat = closest_issue.get('lat', 0)
+            issue_lng = closest_issue.get('lng', 0)
+            issue_severity = closest_issue.get('severity', 0.5)
+            is_accident = 'accident' in closest_issue.get('issue_type', '').lower()
+
+            # Calculate direction away from issue
+            issue_dlat = lat - issue_lat
+            issue_dlng = lng - issue_lng
+            issue_dist = math.sqrt(issue_dlat**2 + issue_dlng**2)
+
+            if issue_dist > 0:
+                # Calculate push strength based on:
+                # 1. Distance to issue (closer = stronger push)
+                # 2. Issue severity (higher severity = stronger push)
+                # 3. Issue type (accidents get extra strong push)
+                distance_factor = (avoidance_radius - min_dist_to_issue) / avoidance_radius
+                severity_multiplier = 1.0 + issue_severity  # 1.0 to 2.0
+                accident_multiplier = 3.0 if is_accident else 1.0
+
+                # Base push: 0.005 degrees (~500m max)
+                # With multipliers, can be up to 0.03 degrees (~3km) for close accidents
+                base_push = 0.005
+                push_strength = base_push * distance_factor * severity_multiplier * accident_multiplier
+
+                adjusted_lat = lat + (issue_dlat / issue_dist) * push_strength
+                adjusted_lng = lng + (issue_dlng / issue_dist) * push_strength
+
+                adjusted_path.append({
+                    "lat": round(adjusted_lat, 6),
+                    "lng": round(adjusted_lng, 6)
+                })
+            else:
+                adjusted_path.append(waypoint)
+        else:
+            adjusted_path.append(waypoint)
     
-    # Very conservative: only adjust if route passes within 100m of a problem area
-    # This ensures we stay on streets and don't make random turns
-    avoidance_radius = 0.1  # 100 meters - very close only
+    # Ensure start and end are exact
+    if adjusted_path:
+        adjusted_path[0] = {"lat": path[0]["lat"], "lng": path[0]["lng"]}
+        adjusted_path[-1] = {"lat": path[-1]["lat"], "lng": path[-1]["lng"]}
     
-    # Check if any waypoint is too close to a problem area
-    needs_adjustment = False
-    problem_segments = []  # Track which segments need adjustment
-    
-    for i in range(len(path) - 1):
-        waypoint = path[i]
-        next_waypoint = path[i + 1]
-        
-        # Check if this segment passes near any problem area
-        for problem_area in areas_to_avoid:
-            problem_lat = problem_area.get('lat', 0)
-            problem_lng = problem_area.get('lng', 0)
-            
-            # Check distance from segment midpoint to problem
-            mid_lat = (waypoint["lat"] + next_waypoint["lat"]) / 2
-            mid_lng = (waypoint["lng"] + next_waypoint["lng"]) / 2
-            dist = haversine_distance(mid_lat, mid_lng, problem_lat, problem_lng)
-            
-            if dist < avoidance_radius:
-                needs_adjustment = True
-                problem_segments.append((i, problem_area, dist))
-                break
-    
-    # If no segments need adjustment, return original path (stays on streets)
-    if not needs_adjustment:
-        logger.info("Route does not pass through problem areas, using original street route")
-        return path
-    
-    # Only adjust segments that are very close to problems
-    # For now, we'll return the original path and log a warning
-    # The route service should handle avoidance at the routing level, not by adjusting waypoints
-    logger.warning(f"Route passes near {len(problem_segments)} problem areas, but keeping original street route to avoid off-street adjustments")
-    
-    # Return original path to stay on streets
-    # In a production system, you'd request alternative routes from OpenRouteService
-    # or use waypoint avoidance features
-    return path
+    return adjusted_path
 
 
 def _generate_smart_path(
@@ -701,47 +548,92 @@ def _generate_smart_path(
     origin_lng: float,
     dest_lat: float,
     dest_lng: float,
-    areas_to_avoid: List[Dict],
+    issues_to_avoid: List[Dict],
     route_type: str,
     num_waypoints: int = 5
 ) -> List[Dict[str, float]]:
     """
-    Generate a simple interpolated path as fallback when OpenRouteService is unavailable.
-    This is a basic straight-line path with minimal curves - not ideal but better than nothing.
-    
-    Note: This fallback doesn't create realistic street routes. The system should primarily
-    rely on OpenRouteService/OSRM for real street-based routing.
+    Generate a smart path that avoids issues and follows realistic patterns.
+    Creates waypoints that curve around problem areas.
+    Avoidance strength varies by route type and issue severity.
     """
     waypoints = []
-    
-    # Simple interpolation with minimal avoidance
-    # We keep it simple to avoid creating unrealistic paths
+
+    # Calculate base direction vector
+    dlat = dest_lat - origin_lat
+    dlng = dest_lng - origin_lng
+    distance = math.sqrt(dlat**2 + dlng**2)
+
+    # Normalize direction
+    if distance > 0:
+        dlat_norm = dlat / distance
+        dlng_norm = dlng / distance
+    else:
+        dlat_norm = 0
+        dlng_norm = 0
+
+    # Set avoidance radius based on route type (in km)
+    avoidance_radius = {
+        'drive': 1.0,        # 1km - drive routes need wide berth
+        'eco': 0.7,          # 700m - eco routes moderate avoidance
+        'quiet_walk': 0.5    # 500m - walking routes can navigate closer
+    }.get(route_type, 0.7)
+
+    # Generate waypoints with avoidance logic
     for i in range(num_waypoints + 1):
         t = i / num_waypoints
+
+        # Base position along straight line
+        base_lat = origin_lat + dlat * t
+        base_lng = origin_lng + dlng * t
+
+        # Calculate avoidance offset for issues
+        avoid_offset_lat = 0
+        avoid_offset_lng = 0
+
+        for issue in issues_to_avoid:
+            issue_lat = issue.get('lat', 0)
+            issue_lng = issue.get('lng', 0)
+            issue_severity = issue.get('severity', 0.5)
+            is_accident = 'accident' in issue.get('issue_type', '').lower()
+
+            # Distance from current point to issue
+            dist_to_issue = haversine_distance(base_lat, base_lng, issue_lat, issue_lng)
+
+            # If issue is within avoidance radius, push route away
+            if dist_to_issue < avoidance_radius:
+                # Calculate direction away from issue
+                issue_dlat = base_lat - issue_lat
+                issue_dlng = base_lng - issue_lng
+                issue_dist = math.sqrt(issue_dlat**2 + issue_dlng**2)
+
+                if issue_dist > 0:
+                    # Calculate push strength based on:
+                    # 1. Distance (closer = stronger)
+                    # 2. Severity (higher = stronger)
+                    # 3. Type (accidents = much stronger)
+                    distance_factor = (avoidance_radius - dist_to_issue) / avoidance_radius
+                    severity_multiplier = 1.0 + issue_severity  # 1.0 to 2.0
+                    accident_multiplier = 4.0 if is_accident else 1.0
+
+                    # Base push: 0.008 degrees (~800m max)
+                    # With multipliers: up to 0.064 degrees (~7km) for very close accidents
+                    base_push = 0.008
+                    push_strength = base_push * distance_factor * severity_multiplier * accident_multiplier
+
+                    avoid_offset_lat += (issue_dlat / issue_dist) * push_strength
+                    avoid_offset_lng += (issue_dlng / issue_dist) * push_strength
         
-        # Simple linear interpolation
-        lat = origin_lat + (dest_lat - origin_lat) * t
-        lng = origin_lng + (dest_lng - origin_lng) * t
+        # Add realistic curve (sine wave pattern for street-like curves)
+        curve_strength = 0.002  # ~200m curve
+        perpendicular_lat = -dlng_norm * math.sin(t * math.pi) * curve_strength
+        perpendicular_lng = dlat_norm * math.sin(t * math.pi) * curve_strength
         
-        # Only make tiny adjustments if very close to problem areas (< 200m)
-        for problem_area in areas_to_avoid:
-            problem_lat = problem_area.get('lat', 0)
-            problem_lng = problem_area.get('lng', 0)
-            dist = haversine_distance(lat, lng, problem_lat, problem_lng)
-            
-            # Only adjust if extremely close (< 200m) and make minimal adjustment
-            if dist < 0.2:
-                problem_dlat = lat - problem_lat
-                problem_dlng = lng - problem_lng
-                problem_dist = math.sqrt(problem_dlat**2 + problem_dlng**2)
-                
-                if problem_dist > 0:
-                    # Very small adjustment to push away slightly
-                    push_strength = (0.2 - dist) / 0.2 * 0.0005  # Max 0.0005 degrees (~50m)
-                    lat += (problem_dlat / problem_dist) * push_strength
-                    lng += (problem_dlng / problem_dist) * push_strength
+        # Combine base position, avoidance, and curve
+        final_lat = base_lat + avoid_offset_lat + perpendicular_lat
+        final_lng = base_lng + avoid_offset_lng + perpendicular_lng
         
-        waypoints.append({"lat": round(lat, 6), "lng": round(lng, 6)})
+        waypoints.append({"lat": round(final_lat, 6), "lng": round(final_lng, 6)})
     
     # Ensure start and end are exact
     waypoints[0] = {"lat": origin_lat, "lng": origin_lng}
@@ -772,12 +664,39 @@ async def _fallback_route(
     traffic: List[Dict],
     noise: List[Dict]
 ) -> Dict[str, Any]:
-    """Fallback to hardcoded routing if ML fails."""
-    path = _generate_simple_path(origin_lat, origin_lng, dest_lat, dest_lng)
+    """Fallback to hardcoded routing if ML fails. Still avoids issues."""
+    # Filter issues to avoid based on route type (same logic as ML path)
+    issues_to_avoid = []
+    for issue in issues:
+        if 'lat' not in issue or 'lng' not in issue:
+            continue
+        severity = issue.get('severity', 0)
+        priority = issue.get('priority', '').lower()
+        issue_type = issue.get('issue_type', '').lower()
+        is_accident = 'accident' in issue_type or 'crash' in issue_type or priority == 'critical'
+
+        should_avoid = False
+        if is_accident:
+            should_avoid = True
+        elif route_type == 'drive':
+            should_avoid = severity > 0.6 or priority in ['high', 'critical']
+        elif route_type == 'eco':
+            should_avoid = severity > 0.7 or priority == 'critical'
+        elif route_type == 'quiet_walk':
+            should_avoid = severity > 0.5 or priority in ['high', 'critical']
+
+        if should_avoid:
+            issues_to_avoid.append(issue)
+
+    # Use smart path generation that avoids issues
+    path = _generate_smart_path(
+        origin_lat, origin_lng, dest_lat, dest_lng,
+        issues_to_avoid, route_type
+    )
     # Convert path from List[Dict] to List[Tuple[float, float]] for schema validation
     path_tuples = [(point['lat'], point['lng']) for point in path]
     metrics_result = _fallback_metrics(distance_km, route_type, issues, traffic, noise)
-    
+
     return {
         "route_type": route_type,
         "path": path_tuples,

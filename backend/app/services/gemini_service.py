@@ -84,8 +84,19 @@ async def analyze_issue_image(image_path: str, issue_type: str, description: str
         if not os.path.exists(image_path):
             logger.warning(f"Image not found: {image_path}")
             return await generate_work_order_suggestion({"issue_type": issue_type, "description": description})
-        
-        img = Image.open(image_path)
+
+        try:
+            img = Image.open(image_path)
+            # Verify the image is valid by attempting to load it
+            img.verify()
+            # Re-open after verify (verify closes the file)
+            img = Image.open(image_path)
+        except (IOError, OSError) as e:
+            logger.error(f"Failed to open or verify image {image_path}: {e}")
+            return await generate_work_order_suggestion({"issue_type": issue_type, "description": description})
+        except Exception as e:
+            logger.error(f"Unexpected error loading image {image_path}: {e}")
+            return await generate_work_order_suggestion({"issue_type": issue_type, "description": description})
         
         prompt = f"""You are an infrastructure damage assessment expert. Analyze this image of a {issue_type}.
 

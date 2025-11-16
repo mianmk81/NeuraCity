@@ -4,7 +4,8 @@ import { formatDistance, formatDuration } from '../lib/helpers';
 const RouteCard = ({ route }) => {
   if (!route) return null;
 
-  const { distance, eta, route_type, co2_score, noise_score, explanation } = route;
+  const { route_type, metrics, explanation } = route;
+  const { distance_km, eta_minutes, co2_kg, avg_noise_db } = metrics || {};
 
   return (
     <div className="glass rounded-lg shadow-lg p-6 border border-blue-500/30">
@@ -20,7 +21,7 @@ const RouteCard = ({ route }) => {
             <div>
               <p className="text-xs text-gray-400">Estimated Time</p>
               <p className="text-sm font-medium text-white">
-                {formatDuration(eta)}
+                {formatDuration(eta_minutes)}
               </p>
             </div>
           </div>
@@ -29,32 +30,32 @@ const RouteCard = ({ route }) => {
             <div>
               <p className="text-xs text-gray-400">Distance</p>
               <p className="text-sm font-medium text-white">
-                {formatDistance(distance)}
+                {formatDistance(distance_km)}
               </p>
             </div>
           </div>
         </div>
 
         {/* Route Type Specific Metrics */}
-        {route_type === 'eco' && co2_score !== undefined && (
+        {route_type === 'eco' && co2_kg !== undefined && (
           <div className="flex items-center p-3 glass border border-green-500/30 rounded-lg">
             <Leaf className="h-5 w-5 text-green-400 mr-2" />
             <div>
-              <p className="text-xs text-green-400 font-medium">CO₂ Score</p>
+              <p className="text-xs text-green-400 font-medium">CO₂ Emissions</p>
               <p className="text-sm text-gray-300">
-                {co2_score.toFixed(2)} - Low emissions route
+                {co2_kg.toFixed(2)} kg - Low emissions route
               </p>
             </div>
           </div>
         )}
 
-        {route_type === 'quiet_walk' && noise_score !== undefined && (
+        {route_type === 'quiet_walk' && avg_noise_db !== undefined && (
           <div className="flex items-center p-3 glass border border-blue-500/30 rounded-lg">
             <Volume2 className="h-5 w-5 text-blue-400 mr-2" />
             <div>
               <p className="text-xs text-blue-400 font-medium">Average Noise</p>
               <p className="text-sm text-gray-300">
-                {noise_score.toFixed(1)} dB - Quiet route
+                {avg_noise_db.toFixed(1)} dB - Quiet route
               </p>
             </div>
           </div>

@@ -2,7 +2,7 @@ import { Loader2, MapPin, Navigation, Search, X } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import Map2D from '../components/Map2D';
 import RouteCard from '../components/RouteCard';
-import { getNoiseData, getTrafficData, planRoute } from '../lib/api';
+import { getNoiseData, getTrafficData, planRoute, getIssues } from '../lib/api';
 
 const ROUTE_TYPES = [
   { value: 'drive', label: 'Drive', description: 'Fastest route avoiding accidents' },
@@ -23,9 +23,25 @@ const PlanRoute = () => {
   const [noiseSegments, setNoiseSegments] = useState([]);
   const [trafficSegments, setTrafficSegments] = useState([]);
   const [heatmapLoading, setHeatmapLoading] = useState(false);
-  
-  // Use ref to track click state to avoid React state batching issues
-  const clickStateRef = useRef({ origin: null, destination: null });
+  const [issues, setIssues] = useState([]);
+
+  // Fetch all issues from database on mount and refresh periodically
+  useEffect(() => {
+    const fetchIssues = async () => {
+      try {
+        const allIssues = await getIssues({ limit: 1000 });
+        setIssues(allIssues || []);
+      } catch (err) {
+        console.error('Failed to fetch issues:', err);
+      }
+    };
+    
+    fetchIssues();
+    // Refresh issues every 30 seconds to show new reports
+    const interval = setInterval(fetchIssues, 30000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   // Fetch contextual heatmap data based on route type
   useEffect(() => {
@@ -57,32 +73,24 @@ const PlanRoute = () => {
   }, [routeType]);
 
   const handleMapClick = (coords) => {
-    // Use ref to check current state immediately (avoids React state batching issues)
-    const currentOrigin = clickStateRef.current.origin;
-    const currentDestination = clickStateRef.current.destination;
-    
     // First click: Set origin (start pin) - only if origin is not set
-    if (!currentOrigin) {
-      clickStateRef.current.origin = coords;
+    if (!origin) {
       setOrigin(coords);
       setOriginInput(`${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`);
       setClickMode('destination'); // Switch to destination mode
       setRoute(null); // Clear existing route
       return; // Important: return early to prevent further execution
     }
-    
+
     // Second click: Set destination (end pin) - only if destination is not set
-    if (!currentDestination) {
-      clickStateRef.current.destination = coords;
+    if (!destination) {
       setDestination(coords);
       setDestinationInput(`${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`);
       setRoute(null); // Clear existing route
       return; // Important: return early
     }
-    
+
     // Both pins are set, clicking again resets and starts over
-    clickStateRef.current.origin = coords;
-    clickStateRef.current.destination = null;
     setOrigin(coords);
     setDestination(null);
     setOriginInput(`${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}`);
@@ -94,7 +102,7 @@ const PlanRoute = () => {
   const geocodeAddress = async (address) => {
     try {
         const response = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}, New York, NY&limit=1`
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}, Atlanta, GA&limit=1`
         );
       const data = await response.json();
       if (data && data.length > 0) {
@@ -133,9 +141,9 @@ const PlanRoute = () => {
       const lng = parseFloat(parts[1]);
       if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
         const coords = { lat, lng };
-        clickStateRef.current.origin = coords;
         setOrigin(coords);
         setRoute(null);
+        setClickMode('destination');
         setLoading(false);
         return;
       }
@@ -144,7 +152,6 @@ const PlanRoute = () => {
     // Otherwise, geocode as address
     const result = await geocodeAddress(originInput);
     if (result) {
-      clickStateRef.current.origin = result;
       setOrigin(result);
       setOriginInput(`${result.lat.toFixed(6)}, ${result.lng.toFixed(6)}`);
       setClickMode('destination');
@@ -168,7 +175,6 @@ const PlanRoute = () => {
       const lng = parseFloat(parts[1]);
       if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
         const coords = { lat, lng };
-        clickStateRef.current.destination = coords;
         setDestination(coords);
         setRoute(null);
         setLoading(false);
@@ -179,7 +185,6 @@ const PlanRoute = () => {
     // Otherwise, geocode as address
     const result = await geocodeAddress(destinationInput);
     if (result) {
-      clickStateRef.current.destination = result;
       setDestination(result);
       setDestinationInput(`${result.lat.toFixed(6)}, ${result.lng.toFixed(6)}`);
       setRoute(null);
@@ -209,8 +214,6 @@ const PlanRoute = () => {
   };
 
   const handleReset = () => {
-    clickStateRef.current.origin = null;
-    clickStateRef.current.destination = null;
     setOrigin(null);
     setDestination(null);
     setRoute(null);
@@ -460,16 +463,17 @@ const PlanRoute = () => {
           <div className="lg:col-span-2 order-first lg:order-last">
             <div className="glass rounded-lg shadow p-2 md:p-4 border border-blue-500/30">
               <div className="h-[400px] md:h-[500px] lg:h-[700px] xl:h-[800px]">
-                <Map2D
+              <Map2D
                   height="100%"
-                  onMapClick={handleMapClick}
-                  markers={markers}
-                  route={route}
+                onMapClick={handleMapClick}
+                markers={markers}
+                route={route}
+                  issues={issues}
                   noiseSegments={noiseSegments}
                   trafficSegments={trafficSegments}
-                  center={[40.7128, -74.0060]} // New York City
+                  center={[33.7490, -84.3880]} // Atlanta, Georgia
                   zoom={13}
-                />
+              />
               </div>
             </div>
           </div>
