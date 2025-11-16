@@ -91,6 +91,7 @@ class IssueResponse(BaseModel):
     priority: Optional[str]
     action_type: Optional[str]
     status: str
+    location_name: Optional[str] = Field(None, description="Human-readable location name from reverse geocoding")
     created_at: datetime
 
     class Config:

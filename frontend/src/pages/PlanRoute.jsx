@@ -473,6 +473,7 @@ const PlanRoute = () => {
                   trafficSegments={trafficSegments}
                   center={[33.7490, -84.3880]} // Atlanta, Georgia
                   zoom={13}
+                  preserveView={true} // Keep user's pan/zoom state after placing pins
               />
               </div>
             </div>

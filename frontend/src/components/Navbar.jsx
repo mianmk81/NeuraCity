@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, AlertCircle, Route, Smile, Shield, Menu, X, Sparkles, BarChart3 } from 'lucide-react';
+import { Home, AlertCircle, Route, Smile, Shield, Menu, X, Sparkles, BarChart3, HardHat, ClipboardList } from 'lucide-react';
 
 const Navbar = () => {
   const location = useLocation();
@@ -9,8 +9,10 @@ const Navbar = () => {
   const navItems = [
     { path: '/', label: 'Home', icon: Home },
     { path: '/report', label: 'Report Issue', icon: AlertCircle },
+    { path: '/my-issues', label: 'My Issues', icon: ClipboardList },
     { path: '/route', label: 'Plan Route', icon: Route },
     { path: '/mood', label: 'Mood Map', icon: Smile },
+    { path: '/contractor', label: 'Contractor', icon: HardHat },
     { path: '/analytics', label: 'Analytics', icon: BarChart3 },
     { path: '/admin', label: 'Admin', icon: Shield },
   ];

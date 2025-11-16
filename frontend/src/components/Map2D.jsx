@@ -22,10 +22,12 @@ const Map2D = ({
   trafficSegments = [],
   route = null,
   markers = [],
+  preserveView = true, // NEW: Preserve user's current map view (pan/zoom)
 }) => {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const onMapClickRef = useRef(onMapClick);
+  const initializedRef = useRef(false); // Track if map has been user-interacted
   const layersRef = useRef({
     issues: L.layerGroup(),
     mood: L.layerGroup(),
@@ -63,6 +65,11 @@ const Map2D = ({
       }
     });
 
+    // Track user interactions (pan, zoom) to mark map as initialized
+    mapInstanceRef.current.on('moveend', () => {
+      initializedRef.current = true;
+    });
+
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
@@ -71,12 +78,12 @@ const Map2D = ({
     };
   }, []);
 
-  // Update center and zoom
+  // Update center and zoom ONLY if preserveView is false OR map hasn't been interacted with yet
   useEffect(() => {
-    if (mapInstanceRef.current) {
+    if (mapInstanceRef.current && (!preserveView || !initializedRef.current)) {
       mapInstanceRef.current.setView(center, zoom);
     }
-  }, [center, zoom]);
+  }, [center, zoom, preserveView]);
 
   // Render issue markers
   useEffect(() => {
@@ -227,7 +234,7 @@ const Map2D = ({
           return [p.lat, p.lng];
         }
       });
-      
+
       const polyline = L.polyline(
         pathCoords,
         {
@@ -239,12 +246,13 @@ const Map2D = ({
 
       polyline.addTo(layer);
 
-      // Fit map to route bounds
-      if (mapInstanceRef.current) {
+      // Fit map to route bounds ONLY on first route or when explicitly requested
+      // (Don't auto-fit if user is actively exploring the map)
+      if (mapInstanceRef.current && !preserveView) {
         mapInstanceRef.current.fitBounds(polyline.getBounds(), { padding: [50, 50] });
       }
     }
-  }, [route]);
+  }, [route, preserveView]);
 
   // Render custom markers (for origin/destination selection)
   useEffect(() => {

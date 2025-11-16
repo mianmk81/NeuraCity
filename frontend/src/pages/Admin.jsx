@@ -2,7 +2,7 @@ import { AlertTriangle, CheckCircle, Eye, List, Loader2, Wrench, X } from 'lucid
 import { useEffect, useState } from 'react';
 import WorkOrderCard from '../components/WorkOrderCard';
 import { approveWorkOrder, getEmergencyQueue, getIssues, getWorkOrders, markEmergencyReviewed, updateIssueStatus } from '../lib/api';
-import { formatDate, formatIssueType, getPriorityColor } from '../lib/helpers';
+import { formatDate, formatIssueType, getIssueCategoryName, getPriorityColor } from '../lib/helpers';
 
 // Helper function to get full image URL
 const getImageUrl = (imageUrl) => {
@@ -152,16 +152,27 @@ const Admin = () => {
                     <p className="text-gray-300">No emergency items in queue</p>
                   </div>
                 ) : (
-                  emergencyQueue.map((emergency) => (
+                  emergencyQueue.map((emergency) => {
+                    const categoryName = emergency.issue
+                      ? getIssueCategoryName(emergency.issue.issue_type, emergency.issue.description)
+                      : 'Emergency Report';
+
+                    return (
                     <div key={emergency.id} className="glass rounded-lg shadow border border-red-500/30 p-6">
                       <div className="flex items-start justify-between mb-4">
                         <div>
-                          <h3 className="text-lg font-semibold text-white mb-1">
-                            Emergency Report
+                          <h3 className="text-lg md:text-xl font-bold text-white mb-1">
+                            {categoryName}
                           </h3>
                           <p className="text-sm text-gray-400">
                             {formatDate(emergency.created_at)}
                           </p>
+                          {emergency.issue?.location_name && (
+                            <p className="text-sm text-cyan-400 mt-1 flex items-center">
+                              <span className="mr-1">📍</span>
+                              {emergency.issue.location_name}
+                            </p>
+                          )}
                         </div>
                         <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
                           emergency.status === 'reviewed'
@@ -223,7 +234,8 @@ const Admin = () => {
                         </button>
                       )}
                     </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             )}
@@ -286,20 +298,24 @@ const Admin = () => {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-blue-500/20">
-                        {allIssues.map((issue) => (
+                        {allIssues.map((issue) => {
+                          const categoryName = getIssueCategoryName(issue.issue_type, issue.description);
+
+                          return (
                           <tr key={issue.id} className="hover:bg-blue-500/10 transition-colors">
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-medium text-white">
-                                {formatIssueType(issue.issue_type)}
+                            <td className="px-6 py-4">
+                              <div className="text-sm md:text-base font-bold text-white mb-1">
+                                {categoryName}
                               </div>
-                              {issue.description && (
-                                <div className="text-xs text-gray-400 max-w-xs truncate">
-                                  {issue.description}
+                              {issue.location_name && (
+                                <div className="text-xs text-cyan-400 flex items-center">
+                                  <span className="mr-1">📍</span>
+                                  {issue.location_name}
                                 </div>
                               )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-xs text-gray-400">
+                              <div className="text-xs text-gray-400 font-mono">
                                 {issue.lat.toFixed(4)}, {issue.lng.toFixed(4)}
                               </div>
                             </td>
@@ -341,7 +357,8 @@ const Admin = () => {
                               )}
                             </td>
                           </tr>
-                        ))}
+                          );
+                        })}
                       </tbody>
                     </table>
                     </div>

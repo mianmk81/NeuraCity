@@ -6,6 +6,8 @@ import PlanRoute from './pages/PlanRoute'
 import MoodMap from './pages/MoodMap'
 import Admin from './pages/Admin'
 import Analytics from './pages/Analytics'
+import ContractorPortal from './pages/ContractorPortal'
+import MyIssues from './pages/MyIssues'
 
 function App() {
   return (
@@ -26,6 +28,8 @@ function App() {
           <Route path="/mood" element={<MoodMap />} />
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/contractor" element={<ContractorPortal />} />
+          <Route path="/my-issues" element={<MyIssues />} />
         </Routes>
       </div>
     </div>

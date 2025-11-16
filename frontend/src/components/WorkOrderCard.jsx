@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { CheckCircle, Clock, Wrench, Package, User, Eye } from 'lucide-react';
-import { formatDate, formatIssueType } from '../lib/helpers';
+import { CheckCircle, Clock, Wrench, Package, User, Eye, ChevronDown, ChevronUp } from 'lucide-react';
+import { formatDate, getIssueCategoryName } from '../lib/helpers';
 import { getContractors, assignContractor } from '../lib/api';
 
 const WorkOrderCard = ({ workOrder, onApprove, onUpdate }) => {
@@ -9,6 +9,7 @@ const WorkOrderCard = ({ workOrder, onApprove, onUpdate }) => {
   const [selectedContractor, setSelectedContractor] = useState(workOrder.contractor_id || '');
   const [isAssigning, setIsAssigning] = useState(false);
   const [showImage, setShowImage] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const isApproved = workOrder.status === 'approved';
   const isPending = workOrder.status === 'pending_review';
@@ -68,87 +69,147 @@ const WorkOrderCard = ({ workOrder, onApprove, onUpdate }) => {
     return `${backendURL}/${imageUrl}`;
   };
 
+  // Get category name for title
+  const categoryName = workOrder.issue
+    ? getIssueCategoryName(workOrder.issue.issue_type, workOrder.issue.description)
+    : 'Unknown Issue';
+
   return (
-    <div className="glass rounded-lg shadow border border-blue-500/30 p-5 hover:border-cyan-500/50 transition-colors">
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className="text-lg font-semibold text-white">
-            {formatIssueType(workOrder.issue?.issue_type || 'Unknown')}
-          </h3>
-          <p className="text-sm text-gray-400">
-            {formatDate(workOrder.created_at)}
-          </p>
+    <div className="infrastructure-card rounded-lg shadow overflow-hidden">
+      <div className="p-5">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1">
+            <h3 className="text-lg md:text-xl font-bold text-white mb-1">
+              {categoryName}
+            </h3>
+            <p className="text-sm text-gray-400">
+              {formatDate(workOrder.created_at)}
+            </p>
+            {workOrder.issue?.location_name && (
+              <p className="text-sm text-cyan-400 mt-1 flex items-center">
+                <span className="mr-1">📍</span>
+                {workOrder.issue.location_name}
+              </p>
+            )}
+          </div>
+          <span className={`px-3 py-1 rounded-full text-xs font-bold border whitespace-nowrap ml-2 ${
+            isApproved ? 'bg-green-500/20 text-green-400 border-green-500/50' :
+            isPending ? 'badge-safety' :
+            'bg-gray-500/20 text-gray-400 border-gray-500/50'
+          }`} style={isPending ? { backgroundColor: 'var(--color-safety-yellow)20', color: '#1a1a1a', borderColor: 'var(--color-safety-yellow)' } : {}}>
+            {workOrder.status.replace('_', ' ').toUpperCase()}
+          </span>
         </div>
-        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
-          isApproved ? 'bg-green-500/20 text-green-400 border-green-500/50' :
-          isPending ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' :
-          'bg-gray-500/20 text-gray-400 border-gray-500/50'
-        }`}>
-          {workOrder.status.replace('_', ' ').toUpperCase()}
-        </span>
+
+      {/* Quick Info - Always Visible */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+        {workOrder.issue && (
+          <div className="glass border border-blue-500/30 rounded-lg p-3">
+            <p className="text-xs text-cyan-400 font-semibold mb-1">LOCATION</p>
+            <p className="text-sm text-white font-mono">
+              {workOrder.issue.lat.toFixed(4)}, {workOrder.issue.lng.toFixed(4)}
+            </p>
+          </div>
+        )}
+        {hasContractor && (
+          <div className="glass border border-purple-500/30 rounded-lg p-3">
+            <p className="text-xs text-purple-400 font-semibold mb-1">CONTRACTOR</p>
+            <p className="text-sm font-bold text-white">{workOrder.contractor_name || 'Assigned'}</p>
+          </div>
+        )}
       </div>
 
-      {/* Issue Location */}
-      {workOrder.issue && (
-        <div className="mb-4 text-sm text-gray-300">
-          <p>
-            <span className="font-medium text-cyan-400">Location:</span>{' '}
-            {workOrder.issue.lat.toFixed(6)}, {workOrder.issue.lng.toFixed(6)}
-          </p>
-          {workOrder.issue.description && (
-            <p className="mt-1">
-              <span className="font-medium text-cyan-400">Description:</span>{' '}
-              {workOrder.issue.description}
-            </p>
-          )}
-          {workOrder.issue.image_url && (
-            <button
-              onClick={() => setShowImage(true)}
-              className="mt-2 flex items-center text-cyan-400 hover:text-cyan-300 font-medium text-sm transition-colors"
-            >
-              <Eye className="h-4 w-4 mr-1" />
-              View Issue Image
-            </button>
-          )}
-        </div>
-      )}
+      {/* View More Button */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-center px-4 py-3 glass border border-construction-orange rounded-lg text-base font-semibold text-white hover:bg-construction-orange/20 transition-all duration-300 mb-4"
+        style={{ borderColor: 'var(--color-construction-orange)' }}
+      >
+        {isExpanded ? (
+          <>
+            <ChevronUp className="h-5 w-5 mr-2" />
+            View Less
+          </>
+        ) : (
+          <>
+            <ChevronDown className="h-5 w-5 mr-2" />
+            View Full Details
+          </>
+        )}
+      </button>
 
-      {/* Material Suggestion with Better Formatting */}
-      {workOrder.material_suggestion && (
-        <div className="mb-4 p-4 glass border border-blue-500/30 rounded-lg">
-          <div className="flex items-start">
-            <Package className="h-5 w-5 text-cyan-400 mr-2 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <p className="text-xs font-semibold text-cyan-400 mb-2 uppercase">
-                AI-Generated Repair Plan
+      {/* Expandable Detailed Content */}
+      {isExpanded && (
+        <div className="border-t border-construction-orange/30 pt-4 mb-4 animate-fade-in" style={{ borderTopColor: 'var(--color-construction-orange)' }}>
+          {/* Full Issue Description */}
+          {workOrder.issue?.description && (
+            <div className="mb-4 p-4 glass border border-blue-500/30 rounded-lg">
+              <p className="text-xs font-bold text-cyan-400 mb-2 uppercase tracking-wide">
+                Issue Description
               </p>
-              <div className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
-                {workOrder.material_suggestion}
+              <p className="text-base text-white leading-relaxed whitespace-pre-wrap">
+                {workOrder.issue.description}
+              </p>
+            </div>
+          )}
+
+          {/* Issue Image */}
+          {workOrder.issue?.image_url && (
+            <div className="mb-4">
+              <button
+                onClick={() => setShowImage(true)}
+                className="flex items-center text-cyan-400 hover:text-cyan-300 font-bold text-base transition-colors"
+              >
+                <Eye className="h-5 w-5 mr-2" />
+                View Issue Evidence Photo
+              </button>
+            </div>
+          )}
+
+          {/* Material Suggestion - Full Details */}
+          {workOrder.material_suggestion && (
+            <div className="mb-4 p-4 glass border border-safety-yellow/30 rounded-lg" style={{ borderColor: 'var(--color-safety-yellow)' }}>
+              <div className="flex items-start">
+                <Package className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" style={{ color: 'var(--color-safety-yellow)' }} />
+                <div className="flex-1">
+                  <p className="text-xs font-bold mb-2 uppercase tracking-wide" style={{ color: 'var(--color-safety-yellow)' }}>
+                    🤖 AI-Generated Repair Plan & Materials
+                  </p>
+                  <div className="text-base text-white whitespace-pre-wrap leading-relaxed">
+                    {workOrder.material_suggestion}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Full Contractor Info */}
+          {hasContractor && (
+            <div className="mb-4 p-4 glass border border-purple-500/30 rounded-lg">
+              <p className="text-xs font-bold text-purple-400 mb-3 uppercase tracking-wide">
+                Contractor Information
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div>
+                  <p className="text-gray-400">Name:</p>
+                  <p className="text-white font-bold text-base">{workOrder.contractor_name}</p>
+                </div>
+                {workOrder.contractor_specialty && (
+                  <div>
+                    <p className="text-gray-400">Specialty:</p>
+                    <p className="text-white font-medium capitalize">
+                      {workOrder.contractor_specialty.replace('_', ' ')}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Contractor Selection or Info */}
-      {hasContractor ? (
-        <div className="mb-4 p-3 glass border border-purple-500/30 rounded-lg">
-          <div className="flex items-start">
-            <User className="h-5 w-5 text-purple-400 mr-2 mt-0.5 flex-shrink-0" />
-            <div className="flex-1">
-              <p className="text-xs font-medium text-purple-400 mb-1">
-                Assigned Contractor
-              </p>
-              <p className="text-sm font-medium text-white">
-                {workOrder.contractor_name || 'Contractor'}
-              </p>
-              <p className="text-xs text-gray-400 capitalize">
-                Specialty: {(workOrder.contractor_specialty || 'general').replace('_', ' ')}
-              </p>
-            </div>
-          </div>
-        </div>
-      ) : isPending && contractors.length > 0 && (
+      {/* Contractor Selection - Only show if no contractor assigned and pending */}
+      {!hasContractor && isPending && contractors.length > 0 && (
         <div className="mb-4 p-4 glass border border-gray-500/30 rounded-lg">
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Select Contractor
@@ -210,6 +271,7 @@ const WorkOrderCard = ({ workOrder, onApprove, onUpdate }) => {
           <span className="font-medium">Work Order Approved & Sent</span>
         </div>
       )}
+      </div>
 
       {/* Image Modal */}
       {showImage && workOrder.issue?.image_url && (

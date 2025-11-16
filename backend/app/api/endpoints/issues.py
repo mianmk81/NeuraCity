@@ -15,6 +15,7 @@ from app.services.ml_scoring_service import (
     determine_action_type_ml
 )
 from app.services.action_engine import process_new_issue
+from app.services.geocoding_service import reverse_geocode
 from app.utils.validators import validate_gps_coordinates
 import logging
 
@@ -102,6 +103,15 @@ async def create_issue(
         
         created_issue = await db_service.create_issue(issue_data)
 
+        # Add reverse geocoding to get location name
+        try:
+            location_name = await reverse_geocode(lat, lng)
+            if location_name:
+                created_issue['location_name'] = location_name
+        except Exception as e:
+            logger.warning(f"Geocoding failed for issue {created_issue['id']}: {e}")
+            created_issue['location_name'] = None
+
         # Process with action engine (emergency queue or work order creation)
         action_engine_failed = False
         try:
@@ -136,7 +146,7 @@ async def get_issues(
 ):
     """
     Get list of issues with optional filters.
-    
+
     Query parameters:
     - issue_type: Filter by type (accident, pothole, traffic_light, other)
     - status: Filter by status (open, in_progress, resolved, closed)
@@ -153,6 +163,16 @@ async def get_issues(
             max_severity=max_severity,
             limit=min(limit, 1000)
         )
+
+        # Add location names to issues (with geocoding)
+        for issue in issues:
+            try:
+                location_name = await reverse_geocode(issue['lat'], issue['lng'])
+                issue['location_name'] = location_name
+            except Exception as e:
+                logger.debug(f"Geocoding failed for issue {issue.get('id')}: {e}")
+                issue['location_name'] = None
+
         return issues
     except Exception as e:
         logger.error(f"Error fetching issues: {e}")
@@ -168,10 +188,18 @@ async def get_issue(
     try:
         db_service = SupabaseService(db)
         issue = await db_service.get_issue_by_id(issue_id)
-        
+
         if not issue:
             raise HTTPException(status_code=404, detail="Issue not found")
-        
+
+        # Add location name
+        try:
+            location_name = await reverse_geocode(issue['lat'], issue['lng'])
+            issue['location_name'] = location_name
+        except Exception as e:
+            logger.debug(f"Geocoding failed: {e}")
+            issue['location_name'] = None
+
         return issue
     except HTTPException:
         raise
