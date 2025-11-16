@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { CheckCircle, Clock, Wrench, Package, User, Eye, ChevronDown, ChevronUp } from 'lucide-react';
-import { formatDate, getIssueCategoryName } from '../lib/helpers';
-import { getContractors, assignContractor } from '../lib/api';
+import { formatDate, getIssueCategoryName } from '../lib/helpers.js';
+import { getContractors, assignContractor } from '../lib/api.js';
 
 const WorkOrderCard = ({ workOrder, onApprove, onUpdate }) => {
   const [isApproving, setIsApproving] = useState(false);

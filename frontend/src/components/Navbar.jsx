@@ -1,7 +1,6 @@
-import { useState, useEffect } from 'react';
+import { AlertCircle, Award, BarChart3, Heart, Home, Leaf, Menu, Route, Shield, Smile, Sparkles, Trophy, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, AlertCircle, Route, Smile, Shield, Menu, X, Sparkles, BarChart3, Heart, Leaf, Trophy, Award } from 'lucide-react';
-import { getUserPoints } from '../lib/api';
 
 const Navbar = () => {
   const location = useLocation();

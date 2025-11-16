@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getIssues, getWorkOrders } from '../lib/api';
+import { getIssues, getWorkOrders } from '../lib/api.js';
 import {
   TrendingUp,
   Users,

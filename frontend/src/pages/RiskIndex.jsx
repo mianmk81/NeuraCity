@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Rectangle, Popup, Tooltip } from 'react-leaflet';
 import { Shield, AlertTriangle, Wind, Activity, Car, Volume2, Info } from 'lucide-react';
-import { getRiskIndex, getAreaRiskDetails } from '../lib/api';
+import { getRiskIndex, getAreaRiskDetails } from '../lib/api.js';
 import LoadingSpinner from '../components/LoadingSpinner';
 import 'leaflet/dist/leaflet.css';
 

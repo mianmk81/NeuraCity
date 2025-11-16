@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, memo } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup, LayerGroup } from 'react-leaflet';
-import { getAccidentHistory } from '../lib/api';
+import { getAccidentHistory } from '../lib/api.js';
 import { Flame, Calendar, Filter } from 'lucide-react';
 import LoadingSpinner from './LoadingSpinner';
 import 'leaflet/dist/leaflet.css';

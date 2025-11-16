@@ -1,7 +1,7 @@
 import { Construction, HardHat, Eye, ChevronDown, ChevronUp, Clock, CheckCircle, Filter } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { getWorkOrders } from '../lib/api';
-import { formatDate, getIssueCategoryName } from '../lib/helpers';
+import { getWorkOrders } from '../lib/api.js';
+import { formatDate, getIssueCategoryName } from '../lib/helpers.js';
 
 // Helper function to get full image URL
 const getImageUrl = (imageUrl) => {

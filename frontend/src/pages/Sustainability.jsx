@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getIssues, getTrafficData, planRoute } from '../lib/api';
+import { getIssues, getTrafficData, planRoute } from '../lib/api.js';
 import {
   Leaf,
   Droplet,

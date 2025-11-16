@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Map2D from '../components/Map2D';
 import MoodLegend from '../components/MoodLegend';
-import { getMoodData, getIssues } from '../lib/api';
+import { getMoodData, getIssues } from '../lib/api.js';
 import { Loader2, RefreshCw } from 'lucide-react';
 
 const MoodMap = () => {

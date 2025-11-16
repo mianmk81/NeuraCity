@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast, { Toaster } from 'react-hot-toast';
 import IssueForm from '../components/IssueForm';
-import { reportIssue } from '../lib/api';
+import { reportIssue } from '../lib/api.js';
 import { CheckCircle, AlertTriangle, TrendingUp, Sparkles } from 'lucide-react';
 
 const ReportIssue = () => {

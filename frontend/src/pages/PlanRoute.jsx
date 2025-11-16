@@ -2,7 +2,7 @@ import { Loader2, MapPin, Navigation, Search, X } from 'lucide-react';
 import { useEffect, useState, useRef } from 'react';
 import Map2D from '../components/Map2D';
 import RouteCard from '../components/RouteCard';
-import { getNoiseData, getTrafficData, planRoute, getIssues } from '../lib/api';
+import { getNoiseData, getTrafficData, planRoute, getIssues } from '../lib/api.js';
 
 const ROUTE_TYPES = [
   { value: 'drive', label: 'Drive', description: 'Fastest route avoiding accidents' },

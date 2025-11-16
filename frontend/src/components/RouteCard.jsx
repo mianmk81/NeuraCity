@@ -1,5 +1,5 @@
 import { Clock, MapPin, Leaf, Volume2 } from 'lucide-react';
-import { formatDistance, formatDuration } from '../lib/helpers';
+import { formatDistance, formatDuration } from '../lib/helpers.js';
 
 const RouteCard = ({ route }) => {
   if (!route) return null;

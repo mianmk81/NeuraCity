@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getMoodData, getIssues, getWorkOrders } from '../lib/api';
+import { getMoodData, getIssues, getWorkOrders } from '../lib/api.js';
 import AccidentHeatmap from '../components/AccidentHeatmap';
 import {
   TrendingUp,

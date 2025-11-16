@@ -1,7 +1,7 @@
 import { useEffect, useRef, memo } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { getPriorityColor, getMoodColor, getNoiseColor, getTrafficColor } from '../lib/helpers';
+import { getPriorityColor, getMoodColor, getNoiseColor, getTrafficColor } from '../lib/helpers.js';
 
 // Fix for default marker icons in Leaflet with Vite
 delete L.Icon.Default.prototype._getIconUrl;

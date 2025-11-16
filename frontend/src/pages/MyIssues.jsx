@@ -1,7 +1,7 @@
 import { AlertTriangle, CheckCircle, Clock, Eye, ChevronDown, ChevronUp, Filter, TrendingUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { getIssues } from '../lib/api';
-import { formatDate, getIssueCategoryName, getPriorityColor } from '../lib/helpers';
+import { getIssues } from '../lib/api.js';
+import { formatDate, getIssueCategoryName, getPriorityColor } from '../lib/helpers.js';
 
 // Helper function to get full image URL
 const getImageUrl = (imageUrl) => {

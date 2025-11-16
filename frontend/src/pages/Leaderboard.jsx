@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Trophy, Medal, Award, Star, TrendingUp, Users } from 'lucide-react';
-import { getLeaderboard } from '../lib/api';
+import { getLeaderboard } from '../lib/api.js';
 import LoadingSpinner from '../components/LoadingSpinner';
 
 const Leaderboard = () => {

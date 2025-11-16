@@ -1,8 +1,8 @@
 import { AlertTriangle, CheckCircle, Eye, List, Loader2, Wrench, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import WorkOrderCard from '../components/WorkOrderCard';
-import { approveWorkOrder, getEmergencyQueue, getIssues, getWorkOrders, markEmergencyReviewed, updateIssueStatus } from '../lib/api';
-import { formatDate, formatIssueType, getIssueCategoryName, getPriorityColor } from '../lib/helpers';
+import { approveWorkOrder, getEmergencyQueue, getIssues, getWorkOrders, markEmergencyReviewed, updateIssueStatus } from '../lib/api.js';
+import { formatDate, formatIssueType, getIssueCategoryName, getPriorityColor } from '../lib/helpers.js';
 
 // Helper function to get full image URL
 const getImageUrl = (imageUrl) => {
