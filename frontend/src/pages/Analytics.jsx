@@ -1,21 +1,24 @@
 import { useState, useEffect } from 'react';
 import { getMoodData, getIssues, getWorkOrders } from '../lib/api';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  AlertTriangle, 
-  Wrench, 
-  Smile, 
-  Frown, 
+import AccidentHeatmap from '../components/AccidentHeatmap';
+import {
+  TrendingUp,
+  TrendingDown,
+  AlertTriangle,
+  Wrench,
+  Smile,
+  Frown,
   MapPin,
   Loader2,
   BarChart3,
-  Activity
+  Activity,
+  Map as MapIcon
 } from 'lucide-react';
 
 const Analytics = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showHeatmap, setShowHeatmap] = useState(false);
   const [analytics, setAnalytics] = useState({
     moodComparison: null,
     topAccidentAreas: [],
@@ -36,7 +39,7 @@ const Analytics = () => {
       // Fetch all data
       const [moodData, issuesData, workOrdersData] = await Promise.all([
         getMoodData(),
-        getIssues({ limit: 1000 }),
+        getIssues({ limit: 50 }),
         getWorkOrders()
       ]);
 
@@ -219,15 +222,37 @@ const Analytics = () => {
                 Insights into city mood, accidents, and construction activity
               </p>
             </div>
-            <button
-              onClick={fetchAnalytics}
-              className="flex items-center px-4 py-3 btn-futuristic text-white rounded-lg transition-all duration-300 min-h-[44px] w-full sm:w-auto"
-            >
-              <Activity className="h-4 w-4 mr-2" />
-              Refresh Data
-            </button>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button
+                onClick={() => setShowHeatmap(!showHeatmap)}
+                className={`flex items-center px-4 py-3 rounded-lg transition-all duration-300 min-h-[44px] flex-1 sm:flex-initial ${
+                  showHeatmap
+                    ? 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+                    : 'glass border border-blue-500/30 text-gray-300 hover:border-cyan-500/50'
+                }`}
+              >
+                <MapIcon className="h-4 w-4 mr-2" />
+                {showHeatmap ? 'Hide' : 'Show'} Heatmap
+              </button>
+              <button
+                onClick={fetchAnalytics}
+                className="flex items-center px-4 py-3 btn-futuristic text-white rounded-lg transition-all duration-300 min-h-[44px] flex-1 sm:flex-initial"
+              >
+                <Activity className="h-4 w-4 mr-2" />
+                Refresh
+              </button>
+            </div>
           </div>
         </div>
+
+        {/* Accident Heatmap */}
+        {showHeatmap && (
+          <div className="glass rounded-xl shadow-lg border border-blue-500/30 mb-6 overflow-hidden">
+            <div className="h-[600px] relative">
+              <AccidentHeatmap showControls={true} />
+            </div>
+          </div>
+        )}
 
         {/* Mood Comparison Card */}
         {analytics.moodComparison && (

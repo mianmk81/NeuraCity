@@ -17,7 +17,7 @@ const MoodMap = () => {
     try {
       const [moodData, issuesData] = await Promise.all([
         getMoodData(),
-        getIssues({ limit: 1000 })
+        getIssues({ limit: 50 })
       ]);
       setMoodAreas(moodData);
       setIssues(issuesData || []);

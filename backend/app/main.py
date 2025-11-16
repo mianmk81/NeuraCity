@@ -11,7 +11,7 @@ import logging
 import os
 
 from app.core.config import get_settings
-from app.api.endpoints import issues, mood, traffic, noise, routing, admin
+from app.api.endpoints import issues, mood, traffic, noise, routing, admin, risk_index, users, accidents, risk
 
 logging.basicConfig(
     level=logging.INFO,
@@ -31,6 +31,13 @@ async def lifespan(app: FastAPI):
     yield
 
     logger.info("Shutting down NeuraCity API...")
+    # Save geocoding cache before shutdown
+    try:
+        from app.services.geocoding_service import save_cache
+        save_cache()
+        logger.info("Geocoding cache saved")
+    except Exception as e:
+        logger.warning(f"Failed to save geocoding cache on shutdown: {e}")
 
 
 app = FastAPI(
@@ -87,5 +94,9 @@ app.include_router(traffic.router, prefix=settings.API_V1_PREFIX)
 app.include_router(noise.router, prefix=settings.API_V1_PREFIX)
 app.include_router(routing.router, prefix=settings.API_V1_PREFIX)
 app.include_router(admin.router, prefix=settings.API_V1_PREFIX)
+app.include_router(risk_index.router, prefix=settings.API_V1_PREFIX)
+app.include_router(users.router, prefix=settings.API_V1_PREFIX)
+app.include_router(accidents.router, prefix=settings.API_V1_PREFIX)
+app.include_router(risk.router, prefix=settings.API_V1_PREFIX)
 
 logger.info(f"All routers loaded. API prefix: {settings.API_V1_PREFIX}")

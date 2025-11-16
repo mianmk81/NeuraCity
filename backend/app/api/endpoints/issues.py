@@ -1,23 +1,22 @@
 """API endpoints for issues management."""
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from typing import List, Optional
-from supabase import Client
-from datetime import datetime
-
-from app.api.schemas.issue import IssueResponse, IssueUpdate, IssueStatus
-from app.core.dependencies import get_db
-from app.services.supabase_service import SupabaseService
-from app.services.image_service import validate_image, save_image, delete_image
-from app.services.ml_scoring_service import (
-    calculate_severity_ml,
-    calculate_urgency_ml,
-    calculate_priority_ml,
-    determine_action_type_ml
-)
-from app.services.action_engine import process_new_issue
-from app.services.geocoding_service import reverse_geocode
-from app.utils.validators import validate_gps_coordinates
 import logging
+from datetime import datetime
+from typing import List, Optional
+
+from app.api.schemas.issue import IssueResponse, IssueStatus, IssueUpdate
+from app.core.dependencies import get_db
+from app.services.action_engine import process_new_issue
+from app.services.geocoding_service import (batch_reverse_geocode,
+                                            reverse_geocode)
+from app.services.image_service import delete_image, save_image, validate_image
+from app.services.ml_scoring_service import (calculate_priority_ml,
+                                             calculate_severity_ml,
+                                             calculate_urgency_ml,
+                                             determine_action_type_ml)
+from app.services.supabase_service import SupabaseService
+from app.utils.validators import validate_gps_coordinates
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from supabase import Client
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/issues", tags=["issues"])
@@ -30,6 +29,7 @@ async def create_issue(
     issue_type: str = Form(..., description="Type of issue"),
     description: Optional[str] = Form(None, description="Issue description"),
     image: UploadFile = File(..., description="Image evidence"),
+    user_id: Optional[str] = Form(None, description="User ID for gamification (optional)"),
     db: Client = Depends(get_db)
 ):
     """
@@ -98,9 +98,10 @@ async def create_issue(
             "urgency": urgency,
             "priority": priority,
             "action_type": action_type,
-            "status": "open"
+            "status": "open",
+            "user_id": user_id
         }
-        
+
         created_issue = await db_service.create_issue(issue_data)
 
         # Add reverse geocoding to get location name
@@ -125,6 +126,24 @@ async def create_issue(
         if action_engine_failed and action_type in ['emergency', 'work_order']:
             logger.warning(f"Issue {created_issue['id']} created but action engine failed for action_type={action_type}")
 
+        # Award points to user if user_id provided (gamification)
+        if user_id:
+            try:
+                from app.services.gamification_service import \
+                    GamificationService
+                gamification_service = GamificationService(db_service)
+
+                await gamification_service.award_points(
+                    user_id=user_id,
+                    action_type="issue_reported",
+                    issue_id=created_issue['id'],
+                    description=f"Reported {issue_type} issue"
+                )
+                logger.info(f"Awarded points to user {user_id} for reporting issue {created_issue['id']}")
+            except Exception as e:
+                # Don't fail the request if gamification fails
+                logger.warning(f"Failed to award points for issue {created_issue['id']}: {e}")
+
         logger.info(f"Created issue {created_issue['id']} with priority {priority}")
         return created_issue
     
@@ -141,7 +160,7 @@ async def get_issues(
     status: Optional[str] = None,
     min_severity: Optional[float] = None,
     max_severity: Optional[float] = None,
-    limit: int = 100,
+    limit: int = 50,
     db: Client = Depends(get_db)
 ):
     """
@@ -152,7 +171,7 @@ async def get_issues(
     - status: Filter by status (open, in_progress, resolved, closed)
     - min_severity: Minimum severity (0-1)
     - max_severity: Maximum severity (0-1)
-    - limit: Maximum number of results (default 100)
+    - limit: Maximum number of results (default 50, max 100)
     """
     try:
         db_service = SupabaseService(db)
@@ -161,16 +180,54 @@ async def get_issues(
             status=status,
             min_severity=min_severity,
             max_severity=max_severity,
-            limit=min(limit, 1000)
+            limit=min(limit, 100)
         )
 
-        # Add location names to issues (with geocoding)
-        for issue in issues:
+        # OPTIMIZATION: Use location_name from Supabase if available, otherwise geocode
+        # Priority: 1) Database value, 2) File cache, 3) API geocoding
+        issues_needing_geocoding = []
+        coord_to_issues = {}  # Map coord key -> list of issue indices
+        
+        for idx, issue in enumerate(issues):
+            # If location_name already exists in Supabase, use it (fastest - no geocoding needed!)
+            if issue.get('location_name'):
+                continue  # Skip - already has location name from database
+            
+            # Only geocode if missing from database
+            coord_key = (round(issue['lat'], 4), round(issue['lng'], 4))
+            if coord_key not in coord_to_issues:
+                coord_to_issues[coord_key] = []
+            coord_to_issues[coord_key].append(idx)
+            issues_needing_geocoding.append((issue['lat'], issue['lng']))
+        
+        # Only geocode unique coordinates that are missing location_name
+        # File cache is checked automatically in reverse_geocode for fast lookups
+        if issues_needing_geocoding:
+            unique_coords = {}  # Map rounded coord key -> (lat, lng) tuple
+            for lat, lng in issues_needing_geocoding:
+                coord_key = (round(lat, 4), round(lng, 4))
+                if coord_key not in unique_coords:
+                    unique_coords[coord_key] = (lat, lng)
+            
             try:
-                location_name = await reverse_geocode(issue['lat'], issue['lng'])
-                issue['location_name'] = location_name
+                location_map = await batch_reverse_geocode(list(unique_coords.values()))
+                
+                # Apply location names to issues that needed geocoding
+                for coord_key, issue_indices in coord_to_issues.items():
+                    lat, lng = unique_coords[coord_key]
+                    location_name = location_map.get((lat, lng))
+                    
+                    for idx in issue_indices:
+                        issues[idx]['location_name'] = location_name
             except Exception as e:
-                logger.debug(f"Geocoding failed for issue {issue.get('id')}: {e}")
+                logger.warning(f"Batch geocoding failed: {e}")
+                # Fallback: set None for issues that needed geocoding
+                for idx in sum(coord_to_issues.values(), []):
+                    issues[idx]['location_name'] = None
+        
+        # Ensure all issues have location_name field (set to None if missing and geocoding failed)
+        for issue in issues:
+            if 'location_name' not in issue:
                 issue['location_name'] = None
 
         return issues
@@ -192,13 +249,15 @@ async def get_issue(
         if not issue:
             raise HTTPException(status_code=404, detail="Issue not found")
 
-        # Add location name
-        try:
-            location_name = await reverse_geocode(issue['lat'], issue['lng'])
-            issue['location_name'] = location_name
-        except Exception as e:
-            logger.debug(f"Geocoding failed: {e}")
-            issue['location_name'] = None
+        # Add location name (use from Supabase if available, otherwise geocode)
+        if not issue.get('location_name'):
+            try:
+                location_name = await reverse_geocode(issue['lat'], issue['lng'])
+                issue['location_name'] = location_name
+            except Exception as e:
+                logger.debug(f"Geocoding failed: {e}")
+                issue['location_name'] = None
+        # If location_name already exists in Supabase, it's already in the issue dict
 
         return issue
     except HTTPException:

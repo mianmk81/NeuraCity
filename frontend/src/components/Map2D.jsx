@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { getPriorityColor, getMoodColor, getNoiseColor, getTrafficColor } from '../lib/helpers';
@@ -11,7 +11,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
 });
 
-const Map2D = ({
+const Map2D = memo(({
   center = [40.7128, -74.0060], // Default to New York City
   zoom = 13,
   height = '500px',
@@ -279,6 +279,8 @@ const Map2D = ({
       className="rounded-lg shadow-lg z-0"
     />
   );
-};
+});
+
+Map2D.displayName = 'Map2D';
 
 export default Map2D;

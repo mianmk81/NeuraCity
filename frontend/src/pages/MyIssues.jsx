@@ -29,7 +29,7 @@ const MyIssues = () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getIssues({ limit: 1000 });
+      const data = await getIssues({ limit: 50 });
       setIssues(data || []);
     } catch (err) {
       setError(err.message || 'Failed to load issues');

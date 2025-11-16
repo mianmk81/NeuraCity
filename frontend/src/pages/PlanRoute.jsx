@@ -29,7 +29,7 @@ const PlanRoute = () => {
   useEffect(() => {
     const fetchIssues = async () => {
       try {
-        const allIssues = await getIssues({ limit: 1000 });
+        const allIssues = await getIssues({ limit: 50 });
         setIssues(allIssues || []);
       } catch (err) {
         console.error('Failed to fetch issues:', err);

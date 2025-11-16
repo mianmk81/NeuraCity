@@ -11,7 +11,10 @@ import {
   Zap,
   Brain,
   Navigation,
-  BarChart3
+  BarChart3,
+  Heart,
+  Leaf,
+  TrendingUp
 } from 'lucide-react';
 
 const Home = () => {
@@ -49,6 +52,22 @@ const Home = () => {
       bgGradient: 'from-cyan-50 to-blue-50',
     },
     {
+      icon: Heart,
+      title: 'Community Impact',
+      description: 'See how your reports make a difference - track improvements and community engagement',
+      link: '/impact',
+      gradient: 'from-pink-500 to-rose-500',
+      bgGradient: 'from-pink-50 to-rose-50',
+    },
+    {
+      icon: Leaf,
+      title: 'Sustainability',
+      description: 'Track carbon footprint, eco-routes, and environmental impact metrics',
+      link: '/sustainability',
+      gradient: 'from-green-500 to-emerald-500',
+      bgGradient: 'from-green-50 to-emerald-50',
+    },
+    {
       icon: Shield,
       title: 'Admin Portal',
       description: 'Manage emergencies, work orders, and infrastructure issues',
@@ -76,6 +95,24 @@ const Home = () => {
       title: 'Smart Routing',
       description: 'Multi-modal routing considering traffic, noise, and environmental factors',
       color: 'teal',
+    },
+    {
+      icon: Heart,
+      title: 'Community Impact',
+      description: 'Track how citizen reports lead to real improvements and city transformation',
+      color: 'pink',
+    },
+    {
+      icon: Leaf,
+      title: 'Sustainability Metrics',
+      description: 'Monitor carbon footprint, eco-routes, and environmental conservation efforts',
+      color: 'green',
+    },
+    {
+      icon: TrendingUp,
+      title: 'Predictive Analytics',
+      description: 'AI-powered predictions to prevent issues before they occur',
+      color: 'blue',
     },
   ];
 
@@ -171,7 +208,10 @@ const Home = () => {
               const colorMap = {
                 orange: 'from-orange-500 to-red-500',
                 indigo: 'from-indigo-500 to-purple-500',
-                teal: 'from-teal-500 to-cyan-500'
+                teal: 'from-teal-500 to-cyan-500',
+                pink: 'from-pink-500 to-rose-500',
+                green: 'from-green-500 to-emerald-500',
+                blue: 'from-blue-500 to-cyan-500'
               };
               return (
                 <div

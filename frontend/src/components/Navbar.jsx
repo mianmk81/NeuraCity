@@ -1,21 +1,40 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, AlertCircle, Route, Smile, Shield, Menu, X, Sparkles, BarChart3, HardHat, ClipboardList } from 'lucide-react';
+import { Home, AlertCircle, Route, Smile, Shield, Menu, X, Sparkles, BarChart3, Heart, Leaf, Trophy, Award } from 'lucide-react';
+import { getUserPoints } from '../lib/api';
 
 const Navbar = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userPoints, setUserPoints] = useState(null);
 
   const navItems = [
     { path: '/', label: 'Home', icon: Home },
     { path: '/report', label: 'Report Issue', icon: AlertCircle },
-    { path: '/my-issues', label: 'My Issues', icon: ClipboardList },
     { path: '/route', label: 'Plan Route', icon: Route },
     { path: '/mood', label: 'Mood Map', icon: Smile },
-    { path: '/contractor', label: 'Contractor', icon: HardHat },
     { path: '/analytics', label: 'Analytics', icon: BarChart3 },
-    { path: '/admin', label: 'Admin', icon: Shield },
+    { path: '/leaderboard', label: 'Leaderboard', icon: Trophy },
+    { path: '/risk', label: 'Risk Index', icon: Shield },
+    { path: '/impact', label: 'Impact', icon: Heart },
+    { path: '/sustainability', label: 'Sustainability', icon: Leaf },
+    { path: '/admin', label: 'Admin', icon: Award },
   ];
+
+  useEffect(() => {
+    // Fetch user points on component mount
+    fetchUserPoints();
+  }, []);
+
+  const fetchUserPoints = async () => {
+    try {
+      // Mock user points data - backend will implement later
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setUserPoints({ points: 1250, rank: 8 });
+    } catch (error) {
+      console.error('Failed to fetch user points:', error);
+    }
+  };
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
@@ -48,13 +67,13 @@ const Navbar = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`relative flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+                  className={`relative flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                     isActive
                       ? 'text-cyan-400 neon-cyan bg-blue-500/20 border border-cyan-500/50'
                       : 'text-gray-300 hover:text-cyan-400 hover:bg-blue-500/10 border border-transparent'
                   }`}
                 >
-                  <Icon className={`h-4 w-4 mr-2 ${isActive ? 'text-cyan-400' : ''}`} />
+                  <Icon className={`h-4 w-4 mr-1.5 ${isActive ? 'text-cyan-400' : ''}`} />
                   {item.label}
                   {isActive && (
                     <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 via-cyan-500 to-purple-500 rounded-full animate-scale-in shadow-lg shadow-cyan-500/50"></span>
@@ -62,6 +81,18 @@ const Navbar = () => {
                 </Link>
               );
             })}
+
+            {/* User Points Badge */}
+            {userPoints && (
+              <Link
+                to="/leaderboard"
+                className="ml-2 flex items-center px-3 py-2 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 border border-yellow-500/50 rounded-lg hover:border-yellow-400/70 transition-all duration-300 group"
+              >
+                <Sparkles className="h-4 w-4 text-yellow-400 mr-2 group-hover:animate-pulse" />
+                <span className="text-yellow-400 font-bold">{userPoints.points}</span>
+                <span className="text-xs text-gray-400 ml-1">pts</span>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -85,7 +116,7 @@ const Navbar = () => {
       <div
         className={`md:hidden border-t border-blue-500/30 glass-dark transition-all duration-300 ease-in-out ${
           mobileMenuOpen
-            ? 'max-h-96 opacity-100'
+            ? 'max-h-[600px] opacity-100'
             : 'max-h-0 opacity-0 overflow-hidden'
         }`}
       >

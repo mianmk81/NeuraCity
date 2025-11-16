@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast, { Toaster } from 'react-hot-toast';
 import IssueForm from '../components/IssueForm';
 import { reportIssue } from '../lib/api';
-import { CheckCircle, AlertTriangle, TrendingUp } from 'lucide-react';
+import { CheckCircle, AlertTriangle, TrendingUp, Sparkles } from 'lucide-react';
 
 const ReportIssue = () => {
   const navigate = useNavigate();
@@ -18,12 +19,41 @@ const ReportIssue = () => {
       const result = await reportIssue(formData);
       setSuccess(result);
 
+      // Calculate points based on priority
+      const pointsEarned = result.priority === 'critical' ? 100 :
+                          result.priority === 'high' ? 75 :
+                          result.priority === 'medium' ? 50 : 25;
+
+      // Show success toast with points earned
+      toast.success(
+        (t) => (
+          <div className="flex items-center">
+            <Sparkles className="h-5 w-5 text-yellow-400 mr-2" />
+            <div>
+              <div className="font-semibold">Issue Reported Successfully!</div>
+              <div className="text-sm text-gray-600">
+                You earned <span className="font-bold text-yellow-500">{pointsEarned} points</span>
+              </div>
+            </div>
+          </div>
+        ),
+        {
+          duration: 4000,
+          style: {
+            background: '#1e293b',
+            color: '#fff',
+            border: '1px solid rgba(34, 211, 238, 0.3)',
+          },
+        }
+      );
+
       // Auto redirect after 5 seconds
       setTimeout(() => {
         navigate('/');
       }, 5000);
     } catch (err) {
       setError(err.message || 'Failed to submit issue. Please try again.');
+      toast.error('Failed to submit issue. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -161,6 +191,7 @@ const ReportIssue = () => {
 
   return (
     <div className="min-h-screen py-6 md:py-12 relative z-10">
+      <Toaster position="top-right" />
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="glass rounded-xl shadow-lg p-4 md:p-8 border border-blue-500/30">
           <div className="mb-8">

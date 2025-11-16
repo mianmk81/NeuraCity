@@ -102,6 +102,26 @@ def verify_database(supabase: Client, detailed: bool = False) -> dict:
         'emergency_queue': {
             'required_columns': ['id', 'issue_id', 'summary', 'status', 'created_at'],
             'description': 'Emergency summaries for accidents'
+        },
+        'users': {
+            'required_columns': ['id', 'username', 'email', 'total_points', 'rank', 'created_at'],
+            'description': 'Gamification user accounts'
+        },
+        'points_transactions': {
+            'required_columns': ['id', 'user_id', 'points_earned', 'transaction_type', 'created_at'],
+            'description': 'Points earning history'
+        },
+        'leaderboard': {
+            'required_columns': ['id', 'user_id', 'username', 'total_points', 'position'],
+            'description': 'Pre-calculated leaderboard rankings'
+        },
+        'accident_history': {
+            'required_columns': ['id', 'issue_id', 'lat', 'lng', 'severity', 'occurred_at'],
+            'description': 'Historical accident tracking'
+        },
+        'block_risk_scores': {
+            'required_columns': ['id', 'block_id', 'lat', 'lng', 'overall_risk_score', 'area_name'],
+            'description': 'Community risk assessment by block'
         }
     }
 
@@ -168,7 +188,11 @@ def verify_views(supabase: Client) -> bool:
     views = [
         'active_issues_summary',
         'pending_work_orders_details',
-        'emergency_queue_details'
+        'emergency_queue_details',
+        'top_users_leaderboard',
+        'accident_hotspots',
+        'high_risk_blocks',
+        'user_activity_summary'
     ]
 
     all_good = True
