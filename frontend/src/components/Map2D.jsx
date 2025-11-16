@@ -146,9 +146,9 @@ const Map2D = memo(({
       });
 
       circle.bindPopup(`
-        <div style="min-width: 200px; padding: 4px;">
-          <h3 style="font-weight: bold; margin-bottom: 8px; color: ${color};">${area.area_id || 'Area'}</h3>
-          <p style="font-size: 13px; line-height: 1.6;">
+        <div style="min-width: 200px; padding: 4px; background-color: white; border-radius: 4px;">
+          <h3 style="font-weight: bold; margin-bottom: 8px; color: black;">${area.area_id || 'Area'}</h3>
+          <p style="font-size: 13px; line-height: 1.6; color: black;">
             <strong>Mood Score:</strong> ${area.mood_score?.toFixed(2) || 'N/A'}<br>
             <strong>Posts Analyzed:</strong> ${area.post_count || 0}<br>
             <strong>Sentiment:</strong> ${area.mood_score >= 0.5 ? '😊 Positive' : area.mood_score >= 0 ? '😐 Neutral' : '😞 Negative'}

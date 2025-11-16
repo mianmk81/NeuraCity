@@ -1,0 +1,27 @@
+# Ignore files that shouldn't be deployed
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+*.log
+.DS_Store
+.git/
+.gitignore
+.vscode/
+.idea/
+*.md
+!README.md
+uploads/
+*.jpg
+*.png
+*.jpeg
+dist/
+.env.local
+.env.development
+.env.test
+

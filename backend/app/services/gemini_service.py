@@ -265,6 +265,9 @@ NOTES: [detailed notes]"""
                 specialty = line.replace('SPECIALTY:', '').strip().lower()
             elif line.startswith('NOTES:'):
                 notes = line.replace('NOTES:', '').strip()
+            else:
+                # If no specific field matched, continue to next line
+                continue
         
         # Validate specialty
         if specialty not in ['pothole_repair', 'electrical', 'traffic_signal', 'general_contractor']:

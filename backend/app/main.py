@@ -70,10 +70,42 @@ async def global_exception_handler(request: Request, exc: Exception):
 os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 app.mount(f"/{settings.UPLOAD_DIR}", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
+# Optionally serve frontend static files if they exist (for Railway deployment)
+# Try multiple possible paths for frontend dist
+possible_paths = [
+    os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "frontend", "dist"),
+    os.path.join(os.getcwd(), "frontend", "dist"),
+    os.path.join(os.path.dirname(os.getcwd()), "frontend", "dist"),
+]
+frontend_dist = None
+for path in possible_paths:
+    if os.path.exists(path) and os.path.isdir(path):
+        frontend_dist = path
+        break
+
+if frontend_dist:
+    # Serve frontend static files (CSS, JS, images, etc.)
+    app.mount("/assets", StaticFiles(directory=os.path.join(frontend_dist, "assets")), name="frontend-assets")
+    
+    # Serve other static files from dist
+    app.mount("/static", StaticFiles(directory=frontend_dist), name="frontend-static")
+    
+    logger.info(f"Serving frontend static files from {frontend_dist}")
+else:
+    logger.info("Frontend dist directory not found, serving API only")
+
 
 @app.get("/")
 async def root():
-    """Root endpoint."""
+    """Root endpoint - serves API info or frontend if available."""
+    if frontend_dist:
+        # If frontend exists, serve it
+        index_path = os.path.join(frontend_dist, "index.html")
+        if os.path.exists(index_path):
+            from fastapi.responses import FileResponse
+            return FileResponse(index_path)
+    
+    # Otherwise return API info
     return {
         "name": settings.PROJECT_NAME,
         "version": settings.VERSION,
@@ -100,3 +132,24 @@ app.include_router(accidents.router, prefix=settings.API_V1_PREFIX)
 app.include_router(risk.router, prefix=settings.API_V1_PREFIX)
 
 logger.info(f"All routers loaded. API prefix: {settings.API_V1_PREFIX}")
+
+# Catch-all route for SPA (must be last, after all API routes)
+if frontend_dist:
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str):
+        """Serve frontend SPA for all non-API routes."""
+        # Don't interfere with API routes, health, or docs
+        if (full_path.startswith("api/") or 
+            full_path.startswith("docs") or 
+            full_path.startswith("openapi.json") or
+            full_path == "health"):
+            from fastapi import HTTPException
+            raise HTTPException(status_code=404, detail="Not found")
+        
+        # Serve index.html for SPA client-side routing
+        index_path = os.path.join(frontend_dist, "index.html")
+        if os.path.exists(index_path):
+            from fastapi.responses import FileResponse
+            return FileResponse(index_path)
+        from fastapi import HTTPException
+        raise HTTPException(status_code=404, detail="Frontend not found")

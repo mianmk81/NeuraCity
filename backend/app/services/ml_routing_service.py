@@ -158,19 +158,27 @@ async def generate_path_ml(
 
     logger.info(f"Route type '{route_type}': Avoiding {len(issues_to_avoid)} issues out of {len(issues)} total")
     
-    # First, try to get real street route from OpenRouteService
+    # First, try to get real street route from OpenRouteService or OSRM
     street_path = await _get_street_route_ors(
         origin_lat, origin_lng, dest_lat, dest_lng, route_type
     )
 
     if street_path and len(street_path) >= 2:
-        # We have a real street route, now adjust it to avoid issues
+        # We have a real street route, check if it needs adjustment for critical issues
+        # Note: We preserve the street route as-is to keep it on actual streets
         adjusted_path = _adjust_path_around_issues(street_path, issues_to_avoid, route_type)
-        logger.info(f"Using OpenRouteService street route with {len(adjusted_path)} waypoints")
+        logger.info(
+            f"Using street route (OSRM/OpenRouteService) with {len(adjusted_path)} waypoints. "
+            f"Route follows actual streets."
+        )
         return adjusted_path
 
     # Fallback: Use smart path generation that avoids issues
-    logger.warning("OpenRouteService unavailable, using smart path generation")
+    # WARNING: This path does NOT follow actual streets, only approximates a route
+    logger.warning(
+        f"OSRM/OpenRouteService unavailable for route from ({origin_lat:.4f}, {origin_lng:.4f}) "
+        f"to ({dest_lat:.4f}, {dest_lng:.4f}). Using smart path generation (may not follow streets)."
+    )
     path = _generate_smart_path(
         origin_lat, origin_lng, dest_lat, dest_lng,
         issues_to_avoid, route_type
@@ -435,21 +443,27 @@ async def _get_street_route_ors(
                     geometry = data["routes"][0].get("geometry", {})
                     coordinates = geometry.get("coordinates", [])
                     
-                    # Convert from [lng, lat] to [lat, lng] format
-                    waypoints = [
-                        {"lat": coord[1], "lng": coord[0]}
-                        for coord in coordinates
-                    ]
-                    
-                    # Ensure start and end are exact
-                    if waypoints:
-                        waypoints[0] = {"lat": origin_lat, "lng": origin_lng}
-                        waypoints[-1] = {"lat": dest_lat, "lng": dest_lng}
-                    
-                    logger.info(f"OSRM returned {len(waypoints)} waypoints")
-                    return waypoints
+                    if not coordinates or len(coordinates) < 2:
+                        logger.warning(f"OSRM returned invalid geometry with {len(coordinates) if coordinates else 0} coordinates")
+                    else:
+                        # Convert from [lng, lat] to [lat, lng] format
+                        waypoints = [
+                            {"lat": coord[1], "lng": coord[0]}
+                            for coord in coordinates
+                        ]
+                        
+                        # Ensure start and end are exact
+                        if waypoints:
+                            waypoints[0] = {"lat": origin_lat, "lng": origin_lng}
+                            waypoints[-1] = {"lat": dest_lat, "lng": dest_lng}
+                        
+                        logger.info(f"OSRM returned {len(waypoints)} waypoints for route from ({origin_lat:.4f}, {origin_lng:.4f}) to ({dest_lat:.4f}, {dest_lng:.4f})")
+                        return waypoints
+                else:
+                    logger.warning(f"OSRM response missing routes: {data.get('code', 'unknown')} - {data.get('message', 'no message')}")
             else:
-                logger.warning(f"OSRM returned status {response.status_code}")
+                error_text = response.text[:200] if hasattr(response, 'text') else 'no error text'
+                logger.warning(f"OSRM returned status {response.status_code}: {error_text}")
     except httpx.TimeoutException:
         logger.warning("OSRM request timed out")
     except Exception as e:
@@ -464,83 +478,52 @@ def _adjust_path_around_issues(
     route_type: str
 ) -> List[Dict[str, float]]:
     """
-    Adjust a street route to avoid issues.
-    Modifies waypoints near issues while keeping the route on streets.
-    Avoidance strength depends on route type and issue severity.
+    Check if a street route passes too close to issues.
+    If it does, return the original path (we can't adjust street routes without breaking them).
+    The route from OSRM/OpenRouteService already follows streets, so we should preserve it.
     """
-    if not issues_to_avoid:
+    if not issues_to_avoid or not path:
         return path
 
-    # Set avoidance radius based on route type (in km)
-    avoidance_radius = {
-        'drive': 0.5,        # 500m - drive routes need more safety distance
-        'eco': 0.3,          # 300m - eco routes can get closer
-        'quiet_walk': 0.25   # 250m - walking routes can navigate tighter
-    }.get(route_type, 0.3)
-
-    adjusted_path = []
-
-    for i, waypoint in enumerate(path):
+    # Check if route passes too close to critical issues (accidents)
+    # For non-critical issues, we'll let the route pass through (it's on streets, which is safe)
+    critical_issues = [
+        issue for issue in issues_to_avoid
+        if 'accident' in issue.get('issue_type', '').lower() or 
+           issue.get('priority', '').lower() == 'critical'
+    ]
+    
+    if not critical_issues:
+        # No critical issues, return original path
+        return path
+    
+    # Check if any waypoint is very close to a critical issue
+    # Only flag if a waypoint is within 100m of an accident
+    min_safe_distance = 0.1  # 100 meters
+    
+    for waypoint in path:
         lat = waypoint["lat"]
         lng = waypoint["lng"]
-
-        # Check distance to all issues to avoid
-        min_dist_to_issue = float('inf')
-        closest_issue = None
-
-        for issue in issues_to_avoid:
+        
+        for issue in critical_issues:
             issue_lat = issue.get('lat', 0)
             issue_lng = issue.get('lng', 0)
             dist = haversine_distance(lat, lng, issue_lat, issue_lng)
-
-            if dist < min_dist_to_issue:
-                min_dist_to_issue = dist
-                closest_issue = issue
-
-        # If within avoidance radius, push waypoint away from issue
-        if min_dist_to_issue < avoidance_radius and closest_issue:
-            issue_lat = closest_issue.get('lat', 0)
-            issue_lng = closest_issue.get('lng', 0)
-            issue_severity = closest_issue.get('severity', 0.5)
-            is_accident = 'accident' in closest_issue.get('issue_type', '').lower()
-
-            # Calculate direction away from issue
-            issue_dlat = lat - issue_lat
-            issue_dlng = lng - issue_lng
-            issue_dist = math.sqrt(issue_dlat**2 + issue_dlng**2)
-
-            if issue_dist > 0:
-                # Calculate push strength based on:
-                # 1. Distance to issue (closer = stronger push)
-                # 2. Issue severity (higher severity = stronger push)
-                # 3. Issue type (accidents get extra strong push)
-                distance_factor = (avoidance_radius - min_dist_to_issue) / avoidance_radius
-                severity_multiplier = 1.0 + issue_severity  # 1.0 to 2.0
-                accident_multiplier = 3.0 if is_accident else 1.0
-
-                # Base push: 0.005 degrees (~500m max)
-                # With multipliers, can be up to 0.03 degrees (~3km) for close accidents
-                base_push = 0.005
-                push_strength = base_push * distance_factor * severity_multiplier * accident_multiplier
-
-                adjusted_lat = lat + (issue_dlat / issue_dist) * push_strength
-                adjusted_lng = lng + (issue_dlng / issue_dist) * push_strength
-
-                adjusted_path.append({
-                    "lat": round(adjusted_lat, 6),
-                    "lng": round(adjusted_lng, 6)
-                })
-            else:
-                adjusted_path.append(waypoint)
-        else:
-            adjusted_path.append(waypoint)
+            
+            if dist < min_safe_distance:
+                # Route passes very close to a critical issue
+                # Log a warning but return the original path
+                # The route is still on streets, which is safer than adjusting it off-street
+                logger.warning(
+                    f"Route passes within {dist*1000:.0f}m of critical issue at ({issue_lat:.4f}, {issue_lng:.4f}). "
+                    f"Keeping original street route."
+                )
+                # Return original path - it's better to have a route on streets even if near an issue
+                # than to adjust it off the streets
+                return path
     
-    # Ensure start and end are exact
-    if adjusted_path:
-        adjusted_path[0] = {"lat": path[0]["lat"], "lng": path[0]["lng"]}
-        adjusted_path[-1] = {"lat": path[-1]["lat"], "lng": path[-1]["lng"]}
-    
-    return adjusted_path
+    # Route doesn't pass too close to critical issues, return as-is
+    return path
 
 
 def _generate_smart_path(

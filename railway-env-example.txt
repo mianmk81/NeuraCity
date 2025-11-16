@@ -1,0 +1,44 @@
+# Railway Environment Variables
+# Copy these to Railway dashboard → Your Service → Variables
+
+# ============================================
+# REQUIRED VARIABLES
+# ============================================
+
+# Supabase Configuration
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your_anon_key_here
+SUPABASE_SERVICE_KEY=your_service_key_here
+
+# AI API Keys
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# Server Configuration
+BACKEND_HOST=0.0.0.0
+BACKEND_PORT=8000
+DEBUG=False
+
+# CORS Configuration (update with your Railway URLs)
+CORS_ORIGINS=https://your-app.railway.app,https://your-custom-domain.com
+
+# ============================================
+# OPTIONAL VARIABLES
+# ============================================
+
+# HuggingFace API (optional, for ML models)
+HUGGINGFACE_API_KEY=
+
+# OpenRouteService API (optional, for better routing)
+OPENROUTESERVICE_API_KEY=
+
+# Frontend API URL (for frontend service)
+VITE_API_URL=https://your-backend-service.railway.app/api/v1
+
+# ============================================
+# NOTES
+# ============================================
+# - Railway automatically provides PORT variable
+# - Update CORS_ORIGINS with your actual Railway URLs
+# - Get Supabase keys from: https://app.supabase.com → Your Project → Settings → API
+# - Get Gemini API key from: https://makersuite.google.com/app/apikey
+
