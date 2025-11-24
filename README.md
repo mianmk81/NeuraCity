@@ -24,7 +24,6 @@ cp .env.example .env
 python -m app.main
 ```
 
-Backend runs at: http://localhost:8000
 
 ### Frontend Setup
 
